@@ -3,7 +3,11 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
+<<<<<<< HEAD
     "practica3": {
+=======
+    "erp": {
+>>>>>>> 7f067b53a85d9531ed00284ac6bc5b5a2bc3c796
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -14,7 +18,13 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
+<<<<<<< HEAD
             "polyfills": ["zone.js"],
+=======
+            "polyfills": [
+              "zone.js"
+            ],
+>>>>>>> 7f067b53a85d9531ed00284ac6bc5b5a2bc3c796
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {
@@ -22,7 +32,13 @@
                 "input": "public"
               }
             ],
+<<<<<<< HEAD
             "styles": ["node_modules/primeicons/primeicons.css", "src/styles.css"]
+=======
+            "styles": [
+              "src/styles.css"
+            ]
+>>>>>>> 7f067b53a85d9531ed00284ac6bc5b5a2bc3c796
           },
           "configurations": {
             "production": {
@@ -52,10 +68,17 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
+<<<<<<< HEAD
               "buildTarget": "practica3:build:production"
             },
             "development": {
               "buildTarget": "practica3:build:development"
+=======
+              "buildTarget": "erp:build:production"
+            },
+            "development": {
+              "buildTarget": "erp:build:development"
+>>>>>>> 7f067b53a85d9531ed00284ac6bc5b5a2bc3c796
             }
           },
           "defaultConfiguration": "development"
@@ -66,7 +89,14 @@
         "test": {
           "builder": "@angular/build:karma",
           "options": {
+<<<<<<< HEAD
             "polyfills": ["zone.js", "zone.js/testing"],
+=======
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
+>>>>>>> 7f067b53a85d9531ed00284ac6bc5b5a2bc3c796
             "tsConfig": "tsconfig.spec.json",
             "assets": [
               {
@@ -75,9 +105,12 @@
               }
             ],
             "styles": [
+<<<<<<< HEAD
               "node_modules/primeicons/primeicons.css",
               "node_modules/primeng/resources/primeng.css",
               "node_modules/primeng/resources/themes/aura-dark-blue/theme.css",
+=======
+>>>>>>> 7f067b53a85d9531ed00284ac6bc5b5a2bc3c796
               "src/styles.css"
             ]
           }

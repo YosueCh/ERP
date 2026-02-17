@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 
 *, *::before, *::after {
@@ -46,3 +47,11 @@ html, body {
 ::-webkit-scrollbar-track { background: #0f172a; }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
 ::-webkit-scrollbar-thumb:hover { background: #475569; }
+=======
+@import "primeicons/primeicons.css";
+
+html, body {
+  background: #fff;
+
+}
+>>>>>>> 7f067b53a85d9531ed00284ac6bc5b5a2bc3c796
