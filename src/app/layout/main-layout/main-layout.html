@@ -1,0 +1,33 @@
+<div class="app-shell">
+  <app-sidebar />
+
+  <div class="main-content">
+
+    <!-- Topbar: p-toolbar reemplaza header manual -->
+    <p-toolbar styleClass="topbar border-noround border-x-none border-top-none">
+
+      <ng-template pTemplate="start">
+        <span class="text-lg font-semibold text-0">{{ pageTitle }}</span>
+      </ng-template>
+
+      <ng-template pTemplate="end">
+        <div class="flex align-items-center gap-2">
+
+          <!-- Avatar usuario -->
+          <p-avatar
+            [label]="userInitial"
+            shape="circle"
+            [style]="{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', cursor: 'pointer' }"
+          />
+
+        </div>
+      </ng-template>
+
+    </p-toolbar>
+
+    <main class="page-content">
+      <router-outlet />
+    </main>
+
+  </div>
+</div>

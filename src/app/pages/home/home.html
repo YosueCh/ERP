@@ -1,0 +1,188 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <div class="flex flex-column gap-1">
+      <h1>Grupos a los que perteneces</h1>
+    </div>
+  </div>
+
+  <div class="groups-grid">
+    @for (group of userGroups; track group.id) {
+      <div class="group-card" (click)="enterGroup(group)">
+
+        <div class="group-card-header">
+          <p-avatar
+            [label]="group.nombre.charAt(0)"
+            shape="circle"
+            size="large"
+            [style]="{
+              background: 'rgba(99,102,241,0.2)',
+              color: '#818cf8',
+              fontSize: '1.3rem'
+            }"
+          />
+          <div class="flex flex-column gap-1">
+            <span class="group-name">{{ group.nombre }}</span>
+          </div>
+        </div>
+
+        <p class="group-desc">{{ group.descripcion }}</p>
+
+        <div class="group-stats">
+          <div class="group-stat">
+            <i class="pi pi-users"></i>
+            <span>{{ group.integrantes }} integrantes</span>
+          </div>
+
+          <div class="group-stat">
+            <i class="pi pi-ticket"></i>
+            <span>{{ group.tickets }} tickets</span>
+          </div>
+        </div>
+
+        <div class="group-card-footer">
+          <span class="enter-hint">
+            Entrar <i class="pi pi-arrow-right"></i>
+          </span>
+        </div>
+
+      </div>
+    }
+  </div>
+
+  <div class="tickets-panel">
+    <div class="tickets-panel-header">
+      <div class="flex flex-column gap-1">
+        <span class="tickets-panel-title">Resumen de tickets</span>
+        <br>
+        <span class="tickets-panel-subtitle">Actividad rápida de tus grupos</span>
+      </div>
+    </div>
+
+    <div class="tickets-summary-grid">
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(99,102,241,0.15)">
+          <i class="pi pi-user-edit" style="color: #818cf8;"></i>
+        </div>
+        <div class="summary-info">
+          <span class="summary-number">{{ totalMyTickets }}</span>
+          <span class="summary-label">Mis tickets</span>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(245,158,11,0.15)">
+          <i class="pi pi-clock" style="color: #f59e0b;"></i>
+        </div>
+        <div class="summary-info">
+          <span class="summary-number">{{ totalPendientes }}</span>
+          <span class="summary-label">Pendientes</span>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(59,130,246,0.15)">
+          <i class="pi pi-spinner" style="color: #3b82f6;"></i>
+        </div>
+        <div class="summary-info">
+          <span class="summary-number">{{ totalEnProgreso }}</span>
+          <span class="summary-label">En progreso</span>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon" style="background: rgba(239,68,68,0.15)">
+          <i class="pi pi-calendar-clock" style="color: #ef4444;"></i>
+        </div>
+        <div class="summary-info">
+          <span class="summary-number">{{ totalPorVencer }}</span>
+          <span class="summary-label">Por vencer</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ticket-filters">
+      <button
+        type="button"
+        class="ticket-filter-btn"
+        [class.active]="filtroTickets === 'todos'"
+        (click)="setFiltroTickets('todos')"
+      >
+        Todos
+      </button>
+
+      <button
+        type="button"
+        class="ticket-filter-btn"
+        [class.active]="filtroTickets === 'mis_tickets'"
+        (click)="setFiltroTickets('mis_tickets')"
+      >
+        Mis tickets
+      </button>
+
+      <button
+        type="button"
+        class="ticket-filter-btn"
+        [class.active]="filtroTickets === 'urgentes'"
+        (click)="setFiltroTickets('urgentes')"
+      >
+        Urgentes
+      </button>
+
+      <button
+        type="button"
+        class="ticket-filter-btn"
+        [class.active]="filtroTickets === 'sin_asignar'"
+        (click)="setFiltroTickets('sin_asignar')"
+      >
+        Sin asignar
+      </button>
+    </div>
+
+    <div class="tickets-table">
+      <div class="tickets-table-header">
+        <span>Ticket</span>
+        <span>Grupo</span>
+        <span>Estado</span>
+        <span>Prioridad</span>
+        <span>Fecha límite</span>
+      </div>
+
+      @for (ticket of filteredHomeTickets; track ticket.groupId + '-' + ticket.id) {
+        <div class="tickets-table-row" (click)="openTicketGroup(ticket)">
+          <div class="ticket-main">
+            <span class="ticket-id">#{{ ticket.id }}</span>
+            <span class="ticket-title">{{ ticket.titulo }}</span>
+            <span class="ticket-assigned">Asignado a: {{ ticket.asignadoA }}</span>
+          </div>
+
+          <span class="ticket-group">{{ ticket.groupName }}</span>
+
+          <div>
+            <p-tag
+              [value]="getEstadoLabel(ticket.estado)"
+              [severity]="getEstadoSeverity(ticket.estado)"
+            />
+          </div>
+
+          <div>
+            <p-tag
+              [value]="getPrioridadLabel(ticket.prioridad)"
+              [severity]="getPrioridadSeverity(ticket.prioridad)"
+            />
+          </div>
+
+          <span class="ticket-date">{{ ticket.fechaLimite ?? '—' }}</span>
+        </div>
+      }
+
+      @if (filteredHomeTickets.length === 0) {
+        <div class="tickets-empty">
+          <i class="pi pi-inbox" style="font-size: 2rem;"></i>
+          <span>No hay tickets para este filtro</span>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>

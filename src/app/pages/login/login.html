@@ -1,0 +1,80 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <p-card>
+
+<ng-template pTemplate="header">
+  <div class="flex flex-column align-items-center text-center pt-5 px-4 pb-4 gap-2">
+  </div>
+</ng-template>
+
+      <form class="login-form" (ngSubmit)="onSubmit()" #loginForm="ngForm">
+
+        <div class="field">
+          <label for="email" class="font-semibold text-sm text-color">
+            Correo electrónico
+          </label>
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon">
+              <i class="pi pi-envelope"></i>
+            </span>
+            <input
+              pInputText
+              id="email"
+              type="email"
+              placeholder="usuario@ejemplo.com"
+              [(ngModel)]="credentials.email"
+              name="email"
+              required
+              [invalid]="!!emailError"
+              class="w-full"
+            />
+          </div>
+          @if (emailError) {
+            <small class="p-error">{{ emailError }}</small>
+          }
+        </div>
+
+        <div class="field">
+          <label for="password" class="font-semibold text-sm text-color">
+            Contraseña
+          </label>
+          <div class="p-inputgroup">
+            <span class="p-inputgroup-addon">
+              <i class="pi pi-lock"></i>
+            </span>
+            <p-password
+              id="password"
+              [(ngModel)]="credentials.password"
+              name="password"
+              [feedback]="false"
+              [toggleMask]="true"
+              placeholder="••••••••"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+              [invalid]="!!passwordError"
+              required
+            />
+          </div>
+          @if (passwordError) {
+            <small class="p-error">{{ passwordError }}</small>
+          }
+        </div>
+
+        @if (loginError) {
+          <p-message severity="error" [text]="loginError" styleClass="w-full" />
+        }
+
+        <p-button
+          type="submit"
+          label="Iniciar sesión"
+          icon="pi pi-sign-in"
+          iconPos="right"
+          styleClass="w-full mt-2"
+          [loading]="isLoading"
+          [raised]="true"
+        />
+
+      </form>
+    </p-card>
+  </div>
+</div>
