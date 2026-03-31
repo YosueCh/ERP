@@ -1,0 +1,74 @@
+<aside class="sidebar" [class.collapsed]="isCollapsed">
+  <div class="sidebar-header">
+    <div class="brand">
+      <i class="pi pi-bolt brand-icon"></i>
+      @if (!isCollapsed) {
+        <span class="brand-name">APLIACAION</span>
+      }
+    </div>
+    <button class="toggle-btn" (click)="toggleCollapse()" pRipple>
+      <i class="pi" [class.pi-chevron-left]="!isCollapsed" [class.pi-chevron-right]="isCollapsed"></i>
+    </button>
+  </div>
+
+  <nav class="sidebar-nav">
+
+    <a class="nav-item" routerLink="/home" routerLinkActive="active" pRipple>
+      <i class="pi pi-home nav-icon"></i>
+      @if (!isCollapsed) {
+        <span class="nav-label">Inicio</span>
+      }
+    </a>
+
+    <a *ifHasPermission="'users:view'"
+      class="nav-item"
+      routerLink="/users"
+      routerLinkActive="active"
+      pRipple
+    >
+      <i class="pi pi-users nav-icon"></i>
+      @if (!isCollapsed) {
+        <span class="nav-label">Usuario</span>
+      }
+    </a>
+
+    <a *ifHasPermission="'group:view'"
+      class="nav-item"
+      routerLink="/groups"
+      routerLinkActive="active"
+      pRipple
+    >
+      <i class="pi pi-th-large nav-icon"></i>
+      @if (!isCollapsed) {
+        <span class="nav-label">Grupos</span>
+      }
+    </a>
+
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info" [class.collapsed]="isCollapsed">
+      <p-avatar
+        [label]="userInitial"
+        styleClass="user-avatar"
+        shape="circle"
+      />
+      @if (!isCollapsed) {
+        <div class="user-details">
+          <span class="user-name">{{ userName }}</span>
+        </div>
+      }
+    </div>
+    <button
+      class="logout-btn"
+      (click)="onLogout()"
+      pRipple
+    >
+      <i class="pi pi-sign-out"></i>
+      @if (!isCollapsed) {
+        <span>Salir</span>
+      }
+    </button>
+    <span>V3.5</span>
+  </div>
+</aside>

@@ -1,0 +1,285 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="page-container">
+  <div class="page-header">
+    <div class="flex flex-column gap-1">
+      <span class="page-title">Gestión de grupos</span>
+      <br>
+      <span class="text-color-secondary text-sm"
+        >Administración y seguimiento de espacios de trabajo</span
+      >
+    </div>
+
+    <p-button
+      *ifHasPermission="'group:add'"
+      label="Nuevo grupo"
+      icon="pi pi-plus"
+      (onClick)="openNew()"
+      [raised]="true"
+    />
+  </div>
+
+<div class="tickets-summary-grid">
+  <div class="summary-card">
+    <div class="summary-icon" style="background: rgba(99,102,241,0.15)">
+      <i class="pi pi-users" style="color: #818cf8;"></i>
+    </div>
+    <div class="summary-info">
+      <span class="summary-number">{{ totalGroups }}</span>
+      <span class="summary-label">Total de grupos</span>
+    </div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-icon" style="background: rgba(16,185,129,0.15)">
+      <i class="pi pi-check-circle" style="color: #34d399;"></i>
+    </div>
+    <div class="summary-info">
+      <span class="summary-number">{{ totalPropios }}</span>
+      <span class="summary-label">Grupos propios</span>
+    </div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-icon" style="background: rgba(245,158,11,0.15)">
+      <i class="pi pi-ticket" style="color: #f59e0b;"></i>
+    </div>
+    <div class="summary-info">
+      <span class="summary-number">{{ totalTickets }}</span>
+      <span class="summary-label">Tickets totales</span>
+    </div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-icon" style="background: rgba(239,68,68,0.15)">
+      <i class="pi pi-id-card" style="color: #ef4444;"></i>
+    </div>
+    <div class="summary-info">
+      <span class="summary-number">{{ totalIntegrantes }}</span>
+      <span class="summary-label">Integrantes totales</span>
+    </div>
+  </div>
+</div>
+
+  <p-card styleClass="table-card">
+    <ng-template pTemplate="header">
+      <div class="table-toolbar">
+        <h2 class="text-lg font-semibold text-0">Lista de grupos</h2>
+        <div class="search-box">
+          <input pInputText [(ngModel)]="searchTerm" placeholder="Buscar grupo..." class="w-full" />
+        </div>
+      </div>
+    </ng-template>
+
+    <p-table
+      [value]="filteredGroups"
+      stripedRows
+      [paginator]="true"
+      [rows]="6"
+      responsiveLayout="scroll"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Nombre</th>
+          <th>Autor</th>
+          <th>Miembros</th>
+          <th>Tickets</th>
+          <th>Descripción</th>
+          <th>Perteneces</th>
+          <th style="width: 120px">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-group>
+        <tr>
+          <td>
+            <button class="group-link-btn" type="button" (click)="goToGroupDashboard(group)">
+              {{ group.nombre }}
+            </button>
+          </td>
+
+          <td>
+            <div class="flex align-items-center gap-2">
+              <p-avatar
+                [label]="group.autor.charAt(0)"
+                shape="circle"
+                size="normal"
+                [style]="{ background: 'rgba(99,102,241,0.2)', color: '#818cf8' }"
+              />
+              <span>{{ group.autor }}</span>
+            </div>
+          </td>
+
+          <td>
+            <div class="flex align-items-center gap-2">
+              <i class="pi pi-users text-color-secondary text-sm"></i>
+              <span>{{ group.integrantes }}</span>
+            </div>
+          </td>
+
+          <td>
+            <div class="flex align-items-center gap-2">
+              <i class="pi pi-ticket text-color-secondary text-sm"></i>
+              <span>{{ group.tickets }}</span>
+            </div>
+          </td>
+
+          <td>
+            <span class="text-color-secondary text-sm">{{ group.descripcion }}</span>
+          </td>
+
+          <td>
+            <p-tag
+              [value]="group.perteneceUsuario ? 'Sí' : 'No'"
+              [severity]="group.perteneceUsuario ? 'success' : 'danger'"
+            />
+          </td>
+
+          <td>
+            <div class="flex gap-1">
+              <button
+                *ifHasPermission="'group:edit'"
+                type="button"
+                class="action-btn edit-btn"
+                (click)="openEdit(group)"
+              >
+                <i class="pi pi-pencil"></i>
+              </button>
+
+              <button
+                *ifHasPermission="'group:delete'"
+                type="button"
+                class="action-btn delete-btn"
+                (click)="confirmDelete(group)"
+              >
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7">
+            <div class="flex flex-column align-items-center gap-3 py-5">
+              <i class="pi pi-inbox" style="font-size: 3rem; color: #334155"></i>
+              <span class="text-color-secondary">No se encontraron grupos</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <p-dialog
+    [(visible)]="dialogVisible"
+    [header]="isEditing ? 'Editar grupo' : 'Nuevo grupo'"
+    [modal]="true"
+    [style]="{ width: '700px', maxWidth: '95vw' }"
+    [draggable]="false"
+  >
+    <div class="flex flex-column gap-4 pt-2">
+      <div class="dialog-row">
+        <div class="field">
+          <label class="field-label">Nombre del grupo</label>
+          <input
+            pInputText
+            [(ngModel)]="selectedGroup.nombre"
+            placeholder="Nombre del grupo"
+            class="w-full"
+          />
+        </div>
+
+        <div class="field">
+          <label class="field-label">Autor</label>
+          <input
+            pInputText
+            [(ngModel)]="selectedGroup.autor"
+            placeholder="Autor del grupo"
+            class="w-full"
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Descripción</label>
+        <textarea
+          pTextarea
+          [(ngModel)]="selectedGroup.descripcion"
+          rows="3"
+          placeholder="Descripción del grupo"
+          class="w-full"
+        ></textarea>
+      </div>
+
+      <p-divider />
+
+      <div class="members-section">
+        <div class="members-header">
+          <span class="members-title">Usuarios del grupo</span>
+          <span class="members-count">{{ selectedGroup.miembros.length }} integrantes</span>
+        </div>
+
+        <div class="member-add-row">
+          <input
+            pInputText
+            [(ngModel)]="newMemberEmail"
+            placeholder="correo@ejemplo.com"
+            class="w-full"
+          />
+          <p-button label="Añadir" icon="pi pi-user-plus" (onClick)="addMember()" />
+        </div>
+
+        @if (selectedGroup.miembros.length > 0) {
+          <div class="members-list">
+            @for (member of selectedGroup.miembros; track member.id) {
+              <div class="member-item">
+                <div class="member-info">
+                  <p-avatar
+                    [label]="member.nombre.charAt(0)"
+                    shape="circle"
+                    size="normal"
+                    [style]="{ background: 'rgba(99,102,241,0.2)', color: '#818cf8' }"
+                  />
+                  <div class="member-text">
+                    <span class="member-name">{{ member.nombre }}</span>
+                    <span class="member-email">{{ member.email }}</span>
+                  </div>
+                </div>
+
+                <p-button
+                  icon="pi pi-times"
+                  [rounded]="true"
+                  [text]="true"
+                  severity="danger"
+                  (onClick)="removeMember(member)"
+                />
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="members-empty">
+            <i class="pi pi-users"></i>
+            <span>No hay usuarios agregados</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <p-button
+        label="Cancelar"
+        severity="secondary"
+        [text]="true"
+        (onClick)="dialogVisible = false"
+      />
+      <p-button
+        [label]="isEditing ? 'Actualizar' : 'Guardar'"
+        icon="pi pi-check"
+        (onClick)="save()"
+      />
+    </ng-template>
+  </p-dialog>
+</div>

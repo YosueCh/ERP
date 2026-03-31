@@ -1,1 +1,48 @@
-/* You can add global styles to this file, and also import other style files */
+
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #0f172a;
+  color: #f1f5f9;
+  -webkit-font-smoothing: antialiased;
+}
+
+.p-card {
+  background: #1e293b !important;
+  border: 1px solid #334155 !important;
+  border-radius: 14px !important;
+  color: #f1f5f9 !important;
+}
+
+.p-card .p-card-title {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: #f1f5f9 !important;
+}
+
+.p-inputtext {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+.p-inputtext::placeholder {
+  color: #475569 !important;
+}
+
+.p-button.p-button-text {
+  color: #94a3b8;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
