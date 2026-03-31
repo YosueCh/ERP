@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "name": "practica3",
+=======
+  "name": "erp",
+>>>>>>> 7f067b53a85d9531ed00284ac6bc5b5a2bc3c796
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -22,15 +26,22 @@
   },
   "private": true,
   "dependencies": {
+<<<<<<< HEAD
     "@angular/animations": "^20.3.17",
     "@angular/cdk": "^20.2.14",
+=======
+>>>>>>> 7f067b53a85d9531ed00284ac6bc5b5a2bc3c796
     "@angular/common": "^20.3.0",
     "@angular/compiler": "^20.3.0",
     "@angular/core": "^20.3.0",
     "@angular/forms": "^20.3.0",
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
+<<<<<<< HEAD
     "@primeng/themes": "^20.4.0",
+=======
+    "@primeuix/themes": "^2.0.3",
+>>>>>>> 7f067b53a85d9531ed00284ac6bc5b5a2bc3c796
     "primeicons": "^7.0.0",
     "primeng": "^20.4.0",
     "rxjs": "~7.8.0",

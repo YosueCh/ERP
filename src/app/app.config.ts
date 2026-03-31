@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { ApplicationConfig, provideZoneChangeDetection, APP_INITIALIZER } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -29,3 +30,24 @@ export const appConfig: ApplicationConfig = {
     },
   ],
 };
+=======
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeuix/themes/aura';
+
+import { routes } from './app.routes';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideBrowserGlobalErrorListeners(),
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
+    providePrimeNG({
+      theme: {
+        preset: Aura
+      }
+    })
+  ]
+};
+>>>>>>> 7f067b53a85d9531ed00284ac6bc5b5a2bc3c796
