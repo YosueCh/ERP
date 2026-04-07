@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-<<<<<<< HEAD
 import { authGuard } from './core/guard/auth';
 
 export const routes: Routes = [
@@ -44,7 +43,3 @@ export const routes: Routes = [
     redirectTo: 'login',
   },
 ];
-=======
-
-export const routes: Routes = [];
->>>>>>> 7f067b53a85d9531ed00284ac6bc5b5a2bc3c796
