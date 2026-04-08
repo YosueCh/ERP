@@ -1,0 +1,121 @@
+<p-toast />
+
+<div class="register-wrapper">
+  <div class="register-card">
+    <div class="register-logo">
+      <div class="logo-circle">
+        <i class="pi pi-user-plus"></i>
+      </div>
+    </div>
+
+    <div class="register-header">
+      <h1 class="register-title">Crear cuenta</h1>
+      <p class="register-subtitle">Completa los datos para registrarte</p>
+    </div>
+
+    <div class="register-form">
+      <!-- Nombre y Usuario -->
+      <div class="form-row">
+        <div class="field">
+          <label class="field-label">Nombre completo *</label>
+          <input pInputText [(ngModel)]="nombre" placeholder="Tu nombre completo" class="w-full" />
+        </div>
+        <div class="field">
+          <label class="field-label">Usuario *</label>
+          <input pInputText [(ngModel)]="usuario" placeholder="nombre_usuario" class="w-full" />
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="field">
+        <label class="field-label">Correo electrónico *</label>
+        <input
+          pInputText
+          [(ngModel)]="email"
+          type="email"
+          placeholder="correo@ejemplo.com"
+          class="w-full"
+        />
+      </div>
+
+      <!-- Teléfono y Fecha nacimiento -->
+      <div class="form-row">
+        <div class="field">
+          <label class="field-label">Teléfono *</label>
+          <p-inputmask
+            [(ngModel)]="telefono"
+            mask="(999) 999-9999"
+            placeholder="(000) 000-0000"
+            styleClass="w-full"
+          />
+        </div>
+        <div class="field">
+          <label class="field-label">Fecha de nacimiento *</label>
+          <p-datepicker
+            [(ngModel)]="fechaNacimiento"
+            [showIcon]="true"
+            dateFormat="dd/mm/yy"
+            placeholder="DD/MM/AAAA"
+            [maxDate]="maxDate"
+            [minDate]="minDate"
+            view="date"
+            [showButtonBar]="true"
+            styleClass="w-full"
+            appendTo="body"
+          />
+          <span class="field-hint">
+            <i class="pi pi-info-circle"></i>
+            Solo registro a mayores de 18 años
+          </span>
+        </div>
+      </div>
+
+      <!-- Dirección -->
+      <div class="field">
+        <label class="field-label">Dirección <span class="optional">(opcional)</span></label>
+        <input pInputText [(ngModel)]="direccion" placeholder="Tu dirección" class="w-full" />
+      </div>
+
+      <!-- Contraseñas -->
+      <div class="form-row">
+        <div class="field">
+          <label class="field-label">Contraseña *</label>
+          <p-password
+            [(ngModel)]="password"
+            [feedback]="true"
+            [toggleMask]="true"
+            placeholder="Mín. 10 caracteres"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          />
+          <span class="field-hint">Debe incluir mayúsculas, números y símbolos (!@#$%^&*)</span>
+        </div>
+        <div class="field">
+          <label class="field-label">Confirmar contraseña *</label>
+          <p-password
+            [(ngModel)]="confirmPassword"
+            [feedback]="false"
+            [toggleMask]="true"
+            placeholder="Repite tu contraseña"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          />
+        </div>
+      </div>
+
+      <p-button
+        label="Crear cuenta"
+        icon="pi pi-check"
+        [loading]="loading"
+        [raised]="true"
+        styleClass="w-full register-btn"
+        (onClick)="onRegister()"
+      />
+
+      <div class="register-login">
+        <span>¿Ya tienes cuenta?</span>
+        <a routerLink="/login">Inicia sesión aquí</a>
+      </div>
+    </div>
+  </div>
+</div>

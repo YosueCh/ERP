@@ -1,87 +1,154 @@
 import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { CookieService } from 'ngx-cookie-service';
 import { PermissionsService } from './permissions';
+import { firstValueFrom } from 'rxjs';
 
 export interface User {
+  id: string;
   name: string;
   email: string;
   usuario: string;
   direccion: string;
 }
 
-interface JwtPayload {
-  user: User;
-  jwtperms: string[];
+interface LoginResponse {
+  statusCode: number;
+  intOpCode: string;
+  data: {
+    token: string;
+    user: {
+      id: string;
+      nombre: string;
+      email: string;
+      usuario: string;
+      direccion: string;
+    };
+    permissionsByGroup: Record<string, string[]>;
+  };
+}
+
+interface RegisterResponse {
+  statusCode: number;
+  intOpCode: string;
+  data: {
+    id: string;
+    nombre: string;
+    email: string;
+    usuario: string;
+  };
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly API_URL = 'http://localhost:3000';
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
+  private readonly PERMS_KEY = 'auth_perms_by_group';
 
   currentUser = signal<User | null>(this.getStoredUser());
 
   constructor(
     private router: Router,
-    private permissionsService: PermissionsService
+    private http: HttpClient,
+    private cookieService: CookieService,
+    private permissionsService: PermissionsService,
   ) {
-    // Restaurar permisos al inicializar el servicio
-    this.restorePermissions();
+    this.restoreSession();
   }
 
-  login(email: string, password: string): Promise<boolean> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (email === 'admin@erp.com' && password === 'aj2$1833$!') {
-          const fakeJwtPayload: JwtPayload = {
-            user: {
-              name: 'Administrador',
-              email,
-              usuario: 'admin',
-              direccion: 'Av. Principal 123',
-            },
-            jwtperms: [
-              'group:view', 'group:edit', 'group:add', 'group:delete',
-              'ticket:view', 'ticket:edit', 'ticket:add', 'ticket:delete', 'ticket:edit_state',
-              'user:view', 'users:view', 'user:edit', 'user:add', 'user:delete',
-            ],
-          };
-
-          this.setSession(fakeJwtPayload);
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-      }, 800);
-    });
-  }
-
-  private setSession(payload: JwtPayload): void {
-    const token = this.encodeToken(payload);
-    localStorage.setItem(this.TOKEN_KEY, token);
-    localStorage.setItem(this.USER_KEY, JSON.stringify(payload.user));
-    this.currentUser.set(payload.user);
-    this.permissionsService.setPermissions(payload.jwtperms);
-  }
-
-  private encodeToken(payload: JwtPayload): string {
-    return btoa(JSON.stringify(payload));
-  }
-
-  private decodeToken(token: string): JwtPayload | null {
+  async login(email: string, password: string): Promise<{ success: boolean; error?: string }> {
     try {
-      return JSON.parse(atob(token));
-    } catch {
-      return null;
+      const response = await firstValueFrom(
+        this.http.post<LoginResponse>(`${this.API_URL}/auth/login`, { email, password })
+      );
+
+      if (response.statusCode === 200) {
+        const { token, user, permissionsByGroup } = response.data;
+
+        // Guardar token en cookie
+        this.cookieService.set(this.TOKEN_KEY, token, {
+          expires: 1,
+          secure: false,
+          sameSite: 'Lax',
+        });
+
+        // Guardar usuario y permisos en localStorage
+        localStorage.setItem(this.USER_KEY, JSON.stringify({
+          id:        user.id,
+          name:      user.nombre,
+          email:     user.email,
+          usuario:   user.usuario,
+          direccion: user.direccion,
+        }));
+        localStorage.setItem(this.PERMS_KEY, JSON.stringify(permissionsByGroup));
+
+        // Actualizar signals
+        this.currentUser.set({
+          id:        user.id,
+          name:      user.nombre,
+          email:     user.email,
+          usuario:   user.usuario,
+          direccion: user.direccion,
+        });
+
+        this.permissionsService.setPermissionsByGroup(permissionsByGroup);
+
+        // Cargar permisos del primer grupo por defecto
+        const firstGroup = Object.keys(permissionsByGroup)[0];
+        if (firstGroup) {
+          this.permissionsService.refreshPermissionsForGroup(firstGroup);
+        }
+
+        return { success: true };
+      }
+
+      return { success: false, error: 'Credenciales inválidas' };
+    } catch (err: any) {
+      const msg = err?.error?.data ?? 'Error al iniciar sesión';
+      return { success: false, error: msg };
     }
   }
 
-  restorePermissions(): void {
-    const token = localStorage.getItem(this.TOKEN_KEY);
-    if (token) {
-      const payload = this.decodeToken(token);
-      if (payload?.jwtperms) {
-        this.permissionsService.setPermissions(payload.jwtperms);
+  async register(data: {
+  nombre: string;
+  email: string;
+  usuario: string;
+  password: string;
+  confirmPassword: string;
+  direccion?: string;
+  telefono?: string;
+  fecha_nacimiento?: string;
+}): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<RegisterResponse>(`${this.API_URL}/auth/register`, data)
+      );
+
+      if (response.statusCode === 201) {
+        return { success: true };
+      }
+
+      return { success: false, error: 'Error al registrar' };
+    } catch (err: any) {
+      const msg = err?.error?.data ?? 'Error al registrar usuario';
+      return { success: false, error: msg };
+    }
+  }
+
+  restoreSession(): void {
+    const token = this.cookieService.get(this.TOKEN_KEY);
+    if (!token) return;
+
+    const permsRaw = localStorage.getItem(this.PERMS_KEY);
+    if (permsRaw) {
+      const permsByGroup = JSON.parse(permsRaw);
+      this.permissionsService.setPermissionsByGroup(permsByGroup);
+
+      const firstGroup = Object.keys(permsByGroup)[0];
+      if (firstGroup) {
+        this.permissionsService.refreshPermissionsForGroup(firstGroup);
       }
     }
   }
@@ -92,15 +159,20 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
+    this.cookieService.delete(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem(this.PERMS_KEY);
     this.currentUser.set(null);
     this.permissionsService.clearPermissions();
     this.router.navigate(['/login']);
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem(this.TOKEN_KEY);
+    return this.cookieService.check(this.TOKEN_KEY);
+  }
+
+  getToken(): string {
+    return this.cookieService.get(this.TOKEN_KEY);
   }
 
   private getStoredUser(): User | null {

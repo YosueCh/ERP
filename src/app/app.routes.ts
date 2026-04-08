@@ -13,6 +13,11 @@ export const routes: Routes = [
       import('./pages/login/login').then((m) => m.LoginComponent),
   },
   {
+    path: 'register',
+    loadComponent: () =>
+      import('./pages/register/register').then((m) => m.RegisterComponent),
+  },
+  {
     path: '',
     loadComponent: () =>
       import('./layout/main-layout/main-layout').then(
@@ -35,7 +40,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/groups/groups').then((m) => m.GroupsComponent),
       },
-      { path: 'group-dashboard/:id', loadComponent: () => import('./pages/group-dashboard/group-dashboard').then(m => m.GroupDashboard) },
+      {
+        path: 'group-dashboard/:id',
+        loadComponent: () =>
+          import('./pages/group-dashboard/group-dashboard').then((m) => m.GroupDashboard),
+      },
     ],
   },
   {

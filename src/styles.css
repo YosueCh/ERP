@@ -46,3 +46,157 @@ html, body {
 ::-webkit-scrollbar-track { background: #0f172a; }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
 ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* PrimeNG Toast global */
+.p-toast {
+  z-index: 9999 !important;
+}
+
+.p-toast-message {
+  border-radius: 12px !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.p-toast-message-warn {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  color: #fbbf24 !important;
+}
+
+.p-toast-message-error {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: #f87171 !important;
+}
+
+.p-toast-message-success {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  color: #6ee7b7 !important;
+}
+
+.p-toast-message-info {
+  background: rgba(59, 130, 246, 0.15) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  color: #93c5fd !important;
+}
+
+.p-toast-summary {
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+}
+
+.p-toast-detail {
+  font-size: 0.85rem !important;
+  opacity: 0.85 !important;
+}
+
+.p-toast-message-content {
+  padding: 1rem 1.25rem !important;
+  gap: 0.75rem !important;
+}
+
+.p-toast-message {
+  min-width: 280px !important;
+}
+
+/* ── Datepicker global ───────────────────────────────────────────────────── */
+.p-datepicker-panel {
+  background: #1e293b !important;
+  border: 1px solid rgba(99, 102, 241, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8) !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+}
+
+.p-datepicker-panel .p-datepicker-header {
+  background: #1e293b !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1) !important;
+  border-radius: 12px 12px 0 0 !important;
+  padding: 0.75rem !important;
+}
+
+.p-datepicker-panel .p-datepicker-title {
+  color: #f1f5f9 !important;
+  font-weight: 600 !important;
+}
+
+.p-datepicker-panel .p-datepicker-calendar-container {
+  background: #1e293b !important;
+  padding: 0.5rem !important;
+}
+
+.p-datepicker-panel table th {
+  color: #64748b !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+}
+
+.p-datepicker-panel table td {
+  padding: 0.15rem !important;
+}
+
+.p-datepicker-panel table td > span {
+  color: #cbd5e1 !important;
+  border-radius: 8px !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.p-datepicker-panel table td > span:hover {
+  background: rgba(99, 102, 241, 0.3) !important;
+  color: #f1f5f9 !important;
+}
+
+.p-datepicker-panel table td > span.p-highlight {
+  background: #6366f1 !important;
+  color: #fff !important;
+}
+
+.p-datepicker-panel table td.p-datepicker-today > span {
+  background: rgba(99, 102, 241, 0.2) !important;
+  color: #818cf8 !important;
+  font-weight: 700 !important;
+}
+
+.p-datepicker-panel table td.p-disabled span {
+  color: #334155 !important;
+  cursor: not-allowed !important;
+}
+
+.p-datepicker-panel .p-datepicker-prev-button,
+.p-datepicker-panel .p-datepicker-next-button {
+  color: #94a3b8 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+}
+
+.p-datepicker-panel .p-datepicker-prev-button:hover,
+.p-datepicker-panel .p-datepicker-next-button:hover {
+  background: rgba(99, 102, 241, 0.2) !important;
+  color: #f1f5f9 !important;
+}
+
+.p-datepicker-panel .p-datepicker-buttonbar {
+  background: #1e293b !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.1) !important;
+  border-radius: 0 0 12px 12px !important;
+  padding: 0.5rem 0.75rem !important;
+}
+
+.p-datepicker-panel .p-datepicker-today-button,
+.p-datepicker-panel .p-datepicker-clear-button {
+  color: #818cf8 !important;
+  font-size: 0.85rem !important;
+}
+
+.p-datepicker-panel .p-datepicker-today-button:hover,
+.p-datepicker-panel .p-datepicker-clear-button:hover {
+  color: #a5b4fc !important;
+  background: transparent !important;
+}

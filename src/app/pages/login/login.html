@@ -1,80 +1,61 @@
+<p-toast />
+
 <div class="login-wrapper">
   <div class="login-card">
-    <p-card>
 
-<ng-template pTemplate="header">
-  <div class="flex flex-column align-items-center text-center pt-5 px-4 pb-4 gap-2">
-  </div>
-</ng-template>
+    <div class="login-logo" (click)="onLogoClick()">
+      <div class="logo-circle">
+        <i class="pi pi-shield"></i>
+      </div>
+    </div>
 
-      <form class="login-form" (ngSubmit)="onSubmit()" #loginForm="ngForm">
+    <div class="login-header">
+      <h1 class="login-title">ERP Seguridad</h1>
+      <p class="login-subtitle">Inicia sesión para continuar</p>
+    </div>
 
-        <div class="field">
-          <label for="email" class="font-semibold text-sm text-color">
-            Correo electrónico
-          </label>
-          <div class="p-inputgroup">
-            <span class="p-inputgroup-addon">
-              <i class="pi pi-envelope"></i>
-            </span>
-            <input
-              pInputText
-              id="email"
-              type="email"
-              placeholder="usuario@ejemplo.com"
-              [(ngModel)]="credentials.email"
-              name="email"
-              required
-              [invalid]="!!emailError"
-              class="w-full"
-            />
-          </div>
-          @if (emailError) {
-            <small class="p-error">{{ emailError }}</small>
-          }
-        </div>
-
-        <div class="field">
-          <label for="password" class="font-semibold text-sm text-color">
-            Contraseña
-          </label>
-          <div class="p-inputgroup">
-            <span class="p-inputgroup-addon">
-              <i class="pi pi-lock"></i>
-            </span>
-            <p-password
-              id="password"
-              [(ngModel)]="credentials.password"
-              name="password"
-              [feedback]="false"
-              [toggleMask]="true"
-              placeholder="••••••••"
-              styleClass="w-full"
-              inputStyleClass="w-full"
-              [invalid]="!!passwordError"
-              required
-            />
-          </div>
-          @if (passwordError) {
-            <small class="p-error">{{ passwordError }}</small>
-          }
-        </div>
-
-        @if (loginError) {
-          <p-message severity="error" [text]="loginError" styleClass="w-full" />
-        }
-
-        <p-button
-          type="submit"
-          label="Iniciar sesión"
-          icon="pi pi-sign-in"
-          iconPos="right"
-          styleClass="w-full mt-2"
-          [loading]="isLoading"
-          [raised]="true"
+    <div class="login-form">
+      <div class="field">
+        <label class="field-label">Correo electrónico</label>
+        <input
+          pInputText
+          [(ngModel)]="email"
+          type="email"
+          placeholder="correo@ejemplo.com"
+          class="w-full"
+          (keyup.enter)="onLogin()"
         />
+      </div>
 
-      </form>
-    </p-card>
+      <div class="field">
+        <label class="field-label">Contraseña</label>
+        <p-password
+          [(ngModel)]="password"
+          [feedback]="false"
+          [toggleMask]="true"
+          placeholder="••••••••"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+          (keyup.enter)="onLogin()"
+        />
+      </div>
+
+      <p-button
+        label="Iniciar sesión"
+        icon="pi pi-sign-in"
+        [loading]="loading"
+        [raised]="true"
+        styleClass="w-full login-btn"
+        (onClick)="onLogin()"
+      />
+
+      <div class="login-divider">o</div>
+
+      <div class="login-register">
+        <span>¿No tienes cuenta?</span>
+        <a routerLink="/register">Regístrate aquí</a>
+      </div>
+    </div>
+
   </div>
 </div>

@@ -9,6 +9,8 @@ export const registerSchema = {
       direccion:        { type: 'string' },
       password:         { type: 'string', minLength: 6 },
       confirmPassword:  { type: 'string', minLength: 6 },
+      telefono:         { type: 'string' },
+      fecha_nacimiento: { type: 'string' },
     },
   },
 };

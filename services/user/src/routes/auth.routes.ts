@@ -7,7 +7,6 @@ import {
   updateUserSchema,
 } from '../schemas/user.schema';
 
-// Respuesta universal
 const res = (statusCode: number, intOpCode: string, data: any) => ({
   statusCode,
   intOpCode,
@@ -18,9 +17,10 @@ export async function userRoutes(fastify: FastifyInstance) {
 
   // ── POST /auth/register ───────────────────────────────────
   fastify.post('/auth/register', { schema: registerSchema }, async (request: FastifyRequest, reply: FastifyReply) => {
-    const { nombre, email, usuario, password, confirmPassword, direccion } = request.body as any;
+    const body = request.body as any;
+    const { nombre, email, usuario, direccion } = body;
 
-    if (confirmPassword && password !== confirmPassword) {
+    if (body.confirmPassword && body.password !== body.confirmPassword) {
       return reply.code(400).send(res(400, 'SxUS400', 'Las contraseñas no coinciden'));
     }
 
@@ -36,7 +36,15 @@ export async function userRoutes(fastify: FastifyInstance) {
 
     const { data: newUser, error } = await supabase
       .from('usuarios')
-      .insert({ nombre, email, usuario, password, direccion })
+      .insert({
+        nombre,
+        email,
+        usuario,
+        password:         body.password,
+        direccion,
+        telefono:         body.telefono ?? null,
+        fecha_nacimiento: body.fecha_nacimiento ?? null,
+      })
       .select('id, nombre, email, usuario')
       .single();
 
