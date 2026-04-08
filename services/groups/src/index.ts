@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import dotenv from 'dotenv';
-import { authRoutes } from './routes/auth.routes';
+import { groupRoutes } from './routes/group.routes';
 
 dotenv.config();
 
@@ -11,25 +11,21 @@ const fastify = Fastify({ logger: true });
 fastify.register(cors, { origin: '*' });
 fastify.register(jwt, { secret: process.env.JWT_SECRET! });
 
-fastify.decorate('authenticate', async (request: any, reply: any) => {
-  try {
-    await request.jwtVerify();
-  } catch (err) {
-    reply.status(401).send({ error: 'Token inválido o expirado' });
-  }
-});
+fastify.get('/health', async () => ({
+  statusCode: 200,
+  intOpCode: 'SxGS200',
+  data: 'groups service ok',
+}));
 
-fastify.register(authRoutes);
-
-fastify.get('/health', async () => ({ status: 'ok' }));
+fastify.register(groupRoutes);
 
 const start = async () => {
   try {
     await fastify.listen({
-      port: Number(process.env.PORT) || 3000,
+      port: Number(process.env.PORT) || 3003,
       host: '0.0.0.0',
     });
-    console.log('Servidor corriendo en http://localhost:3000');
+    console.log('Groups service corriendo en http://localhost:3003');
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

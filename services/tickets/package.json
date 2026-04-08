@@ -1,8 +1,6 @@
 {
-  "name": "api",
+  "name": "tickets-service",
   "version": "1.0.0",
-  "description": "API ERP Seguridad",
-  "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
