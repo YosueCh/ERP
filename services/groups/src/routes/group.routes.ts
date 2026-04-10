@@ -17,64 +17,88 @@ export async function groupRoutes(fastify: FastifyInstance) {
 
   // ── GET /groups ───────────────────────────────────────────
   fastify.get('/groups', async (request: FastifyRequest, reply: FastifyReply) => {
-    const { data, error } = await supabase
+    const { data: grupos } = await supabase
       .from('grupos')
-      .select(`
-        id, nombre, descripcion, created_at,
-        autor:autor_id(id, nombre, email)
-      `)
+      .select('id, nombre, descripcion, created_at, autor:autor_id(id, nombre, email)')
       .order('created_at', { ascending: true });
 
-    if (error) {
-      return reply.code(500).send(res(500, 'SxGS500', 'Error al obtener grupos'));
-    }
+    const grupoIds = (grupos ?? []).map((g: any) => g.id);
 
-    return reply.code(200).send(res(200, 'SxGS200', data));
+    const { data: miembros } = await supabase
+      .from('grupo_miembros')
+      .select('grupo_id, usuario:usuario_id(id, nombre, email, usuario)')
+      .in('grupo_id', grupoIds);
+
+    const result = (grupos ?? []).map((g: any) => ({
+      ...g,
+      miembros: (miembros ?? [])
+        .filter((m: any) => m.grupo_id === g.id)
+        .map((m: any) => m.usuario),
+    }));
+
+    return reply.code(200).send(res(200, 'SxGS200', result));
   });
 
   // ── GET /groups/user/:usuario_id ──────────────────────────
   fastify.get('/groups/user/:usuario_id', async (request: FastifyRequest, reply: FastifyReply) => {
     const { usuario_id } = request.params as any;
 
-    const { data, error } = await supabase
+    const { data: membresias } = await supabase
       .from('grupo_miembros')
-      .select(`
-        grupo:grupo_id(
-          id, nombre, descripcion, created_at,
-          autor:autor_id(id, nombre, email)
-        )
-      `)
+      .select('grupo_id')
       .eq('usuario_id', usuario_id);
 
-    if (error) {
-      return reply.code(500).send(res(500, 'SxGS500', 'Error al obtener grupos del usuario'));
+    const grupoIds = (membresias ?? []).map((m: any) => m.grupo_id);
+
+    if (grupoIds.length === 0) {
+      return reply.code(200).send(res(200, 'SxGS200', []));
     }
 
-    const grupos = (data ?? []).map((d: any) => d.grupo);
-    return reply.code(200).send(res(200, 'SxGS200', grupos));
+    const { data: grupos } = await supabase
+      .from('grupos')
+      .select('id, nombre, descripcion, created_at, autor:autor_id(id, nombre, email)')
+      .in('id', grupoIds);
+
+    const { data: miembros } = await supabase
+      .from('grupo_miembros')
+      .select('grupo_id, usuario:usuario_id(id, nombre, email, usuario)')
+      .in('grupo_id', grupoIds);
+
+    const result = (grupos ?? []).map((g: any) => ({
+      ...g,
+      miembros: (miembros ?? [])
+        .filter((m: any) => m.grupo_id === g.id)
+        .map((m: any) => m.usuario),
+    }));
+
+    return reply.code(200).send(res(200, 'SxGS200', result));
   });
 
   // ── GET /groups/:id ───────────────────────────────────────
   fastify.get('/groups/:id', async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as any;
 
-    const { data, error } = await supabase
+    const { data: grupo, error } = await supabase
       .from('grupos')
-      .select(`
-        id, nombre, descripcion, created_at,
-        autor:autor_id(id, nombre, email),
-        miembros:grupo_miembros(
-          usuario:usuario_id(id, nombre, email, usuario)
-        )
-      `)
+      .select('id, nombre, descripcion, created_at, autor:autor_id(id, nombre, email)')
       .eq('id', id)
       .single();
 
-    if (error || !data) {
+    if (error || !grupo) {
       return reply.code(404).send(res(404, 'SxGS404', 'Grupo no encontrado'));
     }
 
-    return reply.code(200).send(res(200, 'SxGS200', data));
+    const { data: miembros } = await supabase
+      .from('grupo_miembros')
+      .select('usuario:usuario_id(id, nombre, email, usuario)')
+      .eq('grupo_id', id);
+
+    const result = {
+      ...grupo,
+      miembros: (miembros ?? []).map((m: any) => m.usuario),
+    };
+
+    return reply.code(200).send(res(200, 'SxGS200', result));
   });
 
   // ── POST /groups ──────────────────────────────────────────
@@ -92,7 +116,6 @@ export async function groupRoutes(fastify: FastifyInstance) {
       return reply.code(500).send(res(500, 'SxGS500', 'Error al crear grupo'));
     }
 
-    // Agregar autor como miembro automáticamente
     if (autorId) {
       await supabase
         .from('grupo_miembros')

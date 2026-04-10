@@ -1,6 +1,7 @@
 .app-shell {
   display: flex;
   min-height: 100vh;
+  background: #0f172a;
 }
 
 .main-content {
@@ -8,16 +9,118 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  background: #0f172a;
 }
 
+/* ── Topbar ──────────────────────────────────────────────────────────────── */
 .topbar {
   position: sticky;
   top: 0;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.5rem;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  gap: 1rem;
 }
 
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.topbar-icon {
+  font-size: 1.2rem;
+  color: #6366f1;
+}
+
+.topbar-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ── User info ───────────────────────────────────────────────────────────── */
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(30, 41, 59, 0.6);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.topbar-user:hover {
+  background: rgba(30, 41, 59, 0.9);
+}
+
+.user-avatar-wrap {
+  position: relative;
+}
+
+.online-dot {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid #0f172a;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.user-meta-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  text-transform: capitalize;
+  line-height: 1;
+}
+
+.user-meta-role {
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1;
+}
+
+/* ── Page content ────────────────────────────────────────────────────────── */
 .page-content {
   flex: 1;
   padding: 1.5rem;
   overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0.75rem 1rem;
+  }
+
+  .user-meta {
+    display: none;
+  }
+
+  .page-content {
+    padding: 1rem;
+  }
 }

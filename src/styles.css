@@ -200,3 +200,32 @@ html, body {
   color: #a5b4fc !important;
   background: transparent !important;
 }
+
+/* ── Select dropdown global ──────────────────────────────────────────────── */
+.p-select-overlay {
+  background: #1e293b !important;
+  border: 1px solid rgba(99, 102, 241, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+.p-select-list {
+  background: #1e293b !important;
+  padding: 0.5rem !important;
+}
+
+.p-select-option {
+  border-radius: 8px !important;
+  color: #cbd5e1 !important;
+  transition: background 0.15s ease !important;
+}
+
+.p-select-option:hover {
+  background: rgba(99, 102, 241, 0.15) !important;
+  color: #f1f5f9 !important;
+}
+
+.p-select-option.p-selected {
+  background: rgba(99, 102, 241, 0.2) !important;
+  color: #818cf8 !important;
+}

@@ -6,6 +6,7 @@ export const PERMISSIONS = {
     EDIT:   'group:edit',
     ADD:    'group:add',
     DELETE: 'group:delete',
+    MANAGE: 'group:manage',  
   },
   TICKET: {
     VIEW:       'ticket:view',
@@ -20,6 +21,7 @@ export const PERMISSIONS = {
     EDIT:     'user:edit',
     ADD:      'user:add',
     DELETE:   'user:delete',
+    MANAGE:   'user:manage',  
   },
 } as const;
 

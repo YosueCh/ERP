@@ -32,7 +32,13 @@ import {
   TicketHistorial,
   TicketPrioridad,
 } from '../../core/services/group-data';
-import { UserGroup } from '../home/home';
+export interface UserGroup {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  perteneceUsuario?: boolean;
+  autor?: string;
+}
 
 export type FiltroRapido = 'ninguno' | 'mis_tickets' | 'sin_asignar';
 

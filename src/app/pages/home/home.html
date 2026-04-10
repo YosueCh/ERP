@@ -1,188 +1,171 @@
-<div class="page-container">
+<p-toast />
 
-  <div class="page-header">
-    <div class="flex flex-column gap-1">
-      <h1>Grupos a los que perteneces</h1>
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-left">
+      <div class="welcome-block">
+        <span class="welcome-text">Bienvenido de nuevo,</span>
+        <h2 class="welcome-name">{{ user?.name }}</h2>
+        <span class="welcome-date">{{ today }}</span>
+      </div>
     </div>
-  </div>
 
-  <div class="groups-grid">
-    @for (group of userGroups; track group.id) {
-      <div class="group-card" (click)="enterGroup(group)">
-
-        <div class="group-card-header">
-          <p-avatar
-            [label]="group.nombre.charAt(0)"
-            shape="circle"
-            size="large"
-            [style]="{
-              background: 'rgba(99,102,241,0.2)',
-              color: '#818cf8',
-              fontSize: '1.3rem'
-            }"
-          />
-          <div class="flex flex-column gap-1">
-            <span class="group-name">{{ group.nombre }}</span>
-          </div>
-        </div>
-
-        <p class="group-desc">{{ group.descripcion }}</p>
-
-        <div class="group-stats">
-          <div class="group-stat">
-            <i class="pi pi-users"></i>
-            <span>{{ group.integrantes }} integrantes</span>
-          </div>
-
-          <div class="group-stat">
-            <i class="pi pi-ticket"></i>
-            <span>{{ group.tickets }} tickets</span>
-          </div>
-        </div>
-
-        <div class="group-card-footer">
-          <span class="enter-hint">
-            Entrar <i class="pi pi-arrow-right"></i>
-          </span>
-        </div>
-
+    @if (grupos.length > 0) {
+      <div class="group-selector-wrap">
+        <i class="pi pi-th-large selector-icon"></i>
+        <p-select
+          [options]="grupos"
+          [(ngModel)]="selectedGroup"
+          optionLabel="nombre"
+          placeholder="Seleccionar grupo"
+          (onChange)="onGroupChange($event.value)"
+          styleClass="group-selector"
+        >
+          <ng-template pTemplate="selectedItem" let-group>
+            <div class="selector-selected">
+              <span class="selector-avatar">{{ group.nombre.charAt(0) }}</span>
+              <span class="selector-name">{{ group.nombre }}</span>
+            </div>
+          </ng-template>
+          <ng-template pTemplate="item" let-group>
+            <div class="selector-option">
+              <span class="selector-avatar">{{ group.nombre.charAt(0) }}</span>
+              <div class="selector-option-info">
+                <span class="selector-option-name">{{ group.nombre }}</span>
+                <span class="selector-option-desc">{{ group.descripcion }}</span>
+              </div>
+            </div>
+          </ng-template>
+        </p-select>
       </div>
     }
   </div>
 
-  <div class="tickets-panel">
-    <div class="tickets-panel-header">
-      <div class="flex flex-column gap-1">
-        <span class="tickets-panel-title">Resumen de tickets</span>
-        <br>
-        <span class="tickets-panel-subtitle">Actividad rápida de tus grupos</span>
-      </div>
-    </div>
-
-    <div class="tickets-summary-grid">
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(99,102,241,0.15)">
-          <i class="pi pi-user-edit" style="color: #818cf8;"></i>
-        </div>
-        <div class="summary-info">
-          <span class="summary-number">{{ totalMyTickets }}</span>
-          <span class="summary-label">Mis tickets</span>
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(245,158,11,0.15)">
-          <i class="pi pi-clock" style="color: #f59e0b;"></i>
-        </div>
-        <div class="summary-info">
-          <span class="summary-number">{{ totalPendientes }}</span>
-          <span class="summary-label">Pendientes</span>
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(59,130,246,0.15)">
-          <i class="pi pi-spinner" style="color: #3b82f6;"></i>
-        </div>
-        <div class="summary-info">
-          <span class="summary-number">{{ totalEnProgreso }}</span>
-          <span class="summary-label">En progreso</span>
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div class="summary-icon" style="background: rgba(239,68,68,0.15)">
-          <i class="pi pi-calendar-clock" style="color: #ef4444;"></i>
-        </div>
-        <div class="summary-info">
-          <span class="summary-number">{{ totalPorVencer }}</span>
-          <span class="summary-label">Por vencer</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="ticket-filters">
-      <button
-        type="button"
-        class="ticket-filter-btn"
-        [class.active]="filtroTickets === 'todos'"
-        (click)="setFiltroTickets('todos')"
-      >
-        Todos
-      </button>
-
-      <button
-        type="button"
-        class="ticket-filter-btn"
-        [class.active]="filtroTickets === 'mis_tickets'"
-        (click)="setFiltroTickets('mis_tickets')"
-      >
-        Mis tickets
-      </button>
-
-      <button
-        type="button"
-        class="ticket-filter-btn"
-        [class.active]="filtroTickets === 'urgentes'"
-        (click)="setFiltroTickets('urgentes')"
-      >
-        Urgentes
-      </button>
-
-      <button
-        type="button"
-        class="ticket-filter-btn"
-        [class.active]="filtroTickets === 'sin_asignar'"
-        (click)="setFiltroTickets('sin_asignar')"
-      >
-        Sin asignar
-      </button>
-    </div>
-
-    <div class="tickets-table">
-      <div class="tickets-table-header">
-        <span>Ticket</span>
-        <span>Grupo</span>
-        <span>Estado</span>
-        <span>Prioridad</span>
-        <span>Fecha límite</span>
-      </div>
-
-      @for (ticket of filteredHomeTickets; track ticket.groupId + '-' + ticket.id) {
-        <div class="tickets-table-row" (click)="openTicketGroup(ticket)">
-          <div class="ticket-main">
-            <span class="ticket-id">#{{ ticket.id }}</span>
-            <span class="ticket-title">{{ ticket.titulo }}</span>
-            <span class="ticket-assigned">Asignado a: {{ ticket.asignadoA }}</span>
-          </div>
-
-          <span class="ticket-group">{{ ticket.groupName }}</span>
-
-          <div>
-            <p-tag
-              [value]="getEstadoLabel(ticket.estado)"
-              [severity]="getEstadoSeverity(ticket.estado)"
-            />
-          </div>
-
-          <div>
-            <p-tag
-              [value]="getPrioridadLabel(ticket.prioridad)"
-              [severity]="getPrioridadSeverity(ticket.prioridad)"
-            />
-          </div>
-
-          <span class="ticket-date">{{ ticket.fechaLimite ?? '—' }}</span>
-        </div>
-      }
-
-      @if (filteredHomeTickets.length === 0) {
-        <div class="tickets-empty">
-          <i class="pi pi-inbox" style="font-size: 2rem;"></i>
-          <span>No hay tickets para este filtro</span>
-        </div>
+  <!-- Loading skeleton -->
+  @if (loading) {
+    <div class="stats-grid">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <p-card styleClass="stat-card">
+          <p-skeleton height="80px" />
+        </p-card>
       }
     </div>
+  }
+
+  <!-- Stats cards -->
+  @if (!loading && stats) {
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-icon">
+          <i class="pi pi-ticket"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-number">{{ stats.total }}</span>
+          <span class="stat-label">Total tickets</span>
+        </div>
+      </div>
+
+      <div class="stat-card pendiente">
+        <div class="stat-icon">
+          <i class="pi pi-clock"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-number">{{ stats.por_estado.pendiente }}</span>
+          <span class="stat-label">Pendientes</span>
+        </div>
+      </div>
+
+      <div class="stat-card progreso">
+        <div class="stat-icon">
+          <i class="pi pi-spin pi-spinner"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-number">{{ stats.por_estado.en_progreso }}</span>
+          <span class="stat-label">En progreso</span>
+        </div>
+      </div>
+
+      <div class="stat-card hecho">
+        <div class="stat-icon">
+          <i class="pi pi-check-circle"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-number">{{ stats.por_estado.hecho }}</span>
+          <span class="stat-label">Completados</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <p-card header="Tickets por estado" styleClass="chart-card">
+        <div class="chart-wrapper">
+          <p-chart
+            type="doughnut"
+            [data]="estadoChartData"
+            [options]="estadoChartOptions"
+            height="250px"
+          />
+        </div>
+      </p-card>
+
+      <p-card header="Tickets por prioridad" styleClass="chart-card">
+        <div class="chart-wrapper">
+          <p-chart
+            type="bar"
+            [data]="prioridadChartData"
+            [options]="prioridadChartOptions"
+            height="250px"
+          />
+        </div>
+      </p-card>
+    </div>
+  }
+
+  <!-- Grupos -->
+  <div class="section-header">
+    <h2 class="section-title">Mis grupos</h2>
+    <span class="section-count">{{ grupos.length }} grupos</span>
   </div>
 
+  @if (loading) {
+    <div class="groups-grid">
+      @for (i of [1, 2, 3]; track i) {
+        <p-card styleClass="group-card">
+          <p-skeleton height="120px" />
+        </p-card>
+      }
+    </div>
+  }
+
+  @if (!loading) {
+    <div class="groups-grid">
+      @for (group of grupos; track group.id) {
+        <div
+          class="group-card"
+          [class.active]="selectedGroup?.id === group.id"
+          (click)="goToGroup(group)"
+        >
+          <div class="group-avatar">
+            {{ getGroupInitial(group.nombre) }}
+          </div>
+          <div class="group-info">
+            <span class="group-name">{{ group.nombre }}</span>
+            <span class="group-desc">{{ group.descripcion ?? 'Sin descripción' }}</span>
+          </div>
+          <div class="group-arrow">
+            <i class="pi pi-chevron-right"></i>
+          </div>
+        </div>
+      }
+
+      @if (grupos.length === 0) {
+        <div class="empty-groups">
+          <i class="pi pi-users" style="font-size: 2.5rem; color: #334155"></i>
+          <span>No perteneces a ningún grupo</span>
+        </div>
+      }
+    </div>
+  }
 </div>

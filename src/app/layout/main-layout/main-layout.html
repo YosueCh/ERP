@@ -3,27 +3,36 @@
 
   <div class="main-content">
 
-    <!-- Topbar: p-toolbar reemplaza header manual -->
-    <p-toolbar styleClass="topbar border-noround border-x-none border-top-none">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <i class="pi {{ pageIcon }} topbar-icon"></i>
+        <h1 class="topbar-title">{{ pageTitle }}</h1>
+      </div>
 
-      <ng-template pTemplate="start">
-        <span class="text-lg font-semibold text-0">{{ pageTitle }}</span>
-      </ng-template>
-
-      <ng-template pTemplate="end">
-        <div class="flex align-items-center gap-2">
-
-          <!-- Avatar usuario -->
-          <p-avatar
-            [label]="userInitial"
-            shape="circle"
-            [style]="{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', cursor: 'pointer' }"
-          />
-
+      <div class="topbar-right">
+        <div class="topbar-user">
+          <div class="user-avatar-wrap">
+            <p-avatar
+              [label]="userInitial"
+              shape="circle"
+              [style]="{
+                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                color: '#fff',
+                width: '36px',
+                height: '36px',
+                fontSize: '0.9rem',
+                fontWeight: '700'
+              }"
+            />
+            <span class="online-dot"></span>
+          </div>
+          <div class="user-meta">
+            <span class="user-meta-name">{{ userName }}</span>
+          </div>
         </div>
-      </ng-template>
-
-    </p-toolbar>
+      </div>
+    </header>
 
     <main class="page-content">
       <router-outlet />
