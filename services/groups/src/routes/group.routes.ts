@@ -179,21 +179,21 @@ export async function groupRoutes(fastify: FastifyInstance) {
   });
 
   // ── DELETE /groups/:id/members/:usuario_id ────────────────
-  fastify.delete('/groups/:id/members/:usuario_id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id, usuario_id } = request.params as any;
+fastify.delete('/groups/:id/members/:usuario_id', async (request: FastifyRequest, reply: FastifyReply) => {
+  const { id, usuario_id } = request.params as any;
 
-    const { error } = await supabase
-      .from('grupo_miembros')
-      .delete()
-      .eq('grupo_id', id)
-      .eq('usuario_id', usuario_id);
+  const { error } = await supabase
+    .from('grupo_miembros')
+    .delete()
+    .eq('grupo_id', Number(id))
+    .eq('usuario_id', usuario_id);
 
-    if (error) {
-      return reply.code(500).send(res(500, 'SxGS500', 'Error al eliminar miembro'));
-    }
+  if (error) {
+    return reply.code(500).send(res(500, 'SxGS500', 'Error al eliminar miembro'));
+  }
 
-    return reply.code(200).send(res(200, 'SxGS200', 'Miembro eliminado correctamente'));
-  });
+  return reply.code(200).send(res(200, 'SxGS200', 'Miembro eliminado correctamente'));
+});
 
   // ── GET /groups/:id/permissions/:usuario_id ───────────────
   fastify.get('/groups/:id/permissions/:usuario_id', async (request: FastifyRequest, reply: FastifyReply) => {

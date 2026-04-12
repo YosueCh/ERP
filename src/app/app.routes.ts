@@ -45,6 +45,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/group-dashboard/group-dashboard').then((m) => m.GroupDashboard),
       },
+      {
+        path: 'admin-groups',
+        loadComponent: () =>
+          import('./pages/admin-groups/admin-groups').then((m) => m.AdminGroupsComponent),
+      },
+      {
+        path: 'admin-users',
+        loadComponent: () =>
+          import('./pages/admin-users/admin-users').then((m) => m.AdminUsersComponent),
+      },
     ],
   },
   {

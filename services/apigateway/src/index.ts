@@ -9,7 +9,11 @@ dotenv.config();
 
 const fastify = Fastify({ logger: true });
 
-fastify.register(cors, { origin: '*' });
+fastify.register(cors, {
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+});
 fastify.register(jwt, { secret: process.env.JWT_SECRET! });
 
 // Rate limiting: 100 requests por minuto
