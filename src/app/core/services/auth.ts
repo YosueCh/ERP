@@ -42,12 +42,15 @@ interface RegisterResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:3000';
+  private readonly API_URL  = 'http://localhost:3000';
   private readonly TOKEN_KEY = 'auth_token';
-  private readonly USER_KEY = 'auth_user';
+  private readonly USER_KEY  = 'auth_user';
   private readonly PERMS_KEY = 'auth_perms_by_group';
 
   currentUser = signal<User | null>(this.getStoredUser());
+
+  // Signal para notificar cuenta desactivada mid-session
+  accountDeactivated = signal<boolean>(false);
 
   constructor(
     private router: Router,
@@ -67,14 +70,12 @@ export class AuthService {
       if (response.statusCode === 200) {
         const { token, user, permissionsByGroup } = response.data;
 
-        // Guardar token en cookie
         this.cookieService.set(this.TOKEN_KEY, token, {
           expires: 1,
           secure: false,
           sameSite: 'Lax',
         });
 
-        // Guardar usuario y permisos en localStorage
         localStorage.setItem(this.USER_KEY, JSON.stringify({
           id:        user.id,
           name:      user.nombre,
@@ -84,7 +85,6 @@ export class AuthService {
         }));
         localStorage.setItem(this.PERMS_KEY, JSON.stringify(permissionsByGroup));
 
-        // Actualizar signals
         this.currentUser.set({
           id:        user.id,
           name:      user.nombre,
@@ -95,32 +95,38 @@ export class AuthService {
 
         this.permissionsService.setPermissionsByGroup(permissionsByGroup);
 
-        // Cargar permisos del primer grupo por defecto
         const firstGroup = Object.keys(permissionsByGroup)[0];
         if (firstGroup) {
           this.permissionsService.refreshPermissionsForGroup(firstGroup);
         }
 
+        this.accountDeactivated.set(false);
         return { success: true };
       }
 
       return { success: false, error: 'Credenciales inválidas' };
     } catch (err: any) {
-      const msg = err?.error?.data ?? 'Error al iniciar sesión';
+      const intOpCode = err?.error?.intOpCode ?? '';
+      const msg       = err?.error?.data ?? 'Error al iniciar sesión';
+
+      if (intOpCode === 'SxGW401_INACTIVE') {
+        return { success: false, error: 'INACTIVE' };
+      }
+
       return { success: false, error: msg };
     }
   }
 
   async register(data: {
-  nombre: string;
-  email: string;
-  usuario: string;
-  password: string;
-  confirmPassword: string;
-  direccion?: string;
-  telefono?: string;
-  fecha_nacimiento?: string;
-}): Promise<{ success: boolean; error?: string }> {
+    nombre: string;
+    email: string;
+    usuario: string;
+    password: string;
+    confirmPassword: string;
+    direccion?: string;
+    telefono?: string;
+    fecha_nacimiento?: string;
+  }): Promise<{ success: boolean; error?: string }> {
     try {
       const response = await firstValueFrom(
         this.http.post<RegisterResponse>(`${this.API_URL}/auth/register`, data)
@@ -135,6 +141,23 @@ export class AuthService {
       const msg = err?.error?.data ?? 'Error al registrar usuario';
       return { success: false, error: msg };
     }
+  }
+
+  // Llamado por el interceptor cuando detecta 401_INACTIVE mid-session
+  handleDeactivated(): void {
+    this.accountDeactivated.set(true);
+    this.forceLogout();
+  }
+
+  forceLogout(): void {
+    this.cookieService.delete(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem(this.PERMS_KEY);
+    this.currentUser.set(null);
+    this.permissionsService.clearPermissions();
+    this.router.navigate(['/login'], {
+      queryParams: { reason: 'deactivated' },
+    });
   }
 
   restoreSession(): void {

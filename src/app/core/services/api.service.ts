@@ -125,8 +125,13 @@ export class ApiService {
     return this.http.put<ApiResponse<any>>(`${this.BASE_URL}/tickets/${id}`, data, { headers: this.getHeaders() });
   }
 
-  updateTicketStatus(id: number, estado: string): Observable<ApiResponse<any>> {
-    return this.http.patch<ApiResponse<any>>(`${this.BASE_URL}/tickets/${id}/status`, { estado }, { headers: this.getHeaders() });
+  // grupo_id incluido para que el gateway pueda verificar permiso ticket:move
+  updateTicketStatus(id: number, estado: string, grupoId: number): Observable<ApiResponse<any>> {
+    return this.http.patch<ApiResponse<any>>(
+      `${this.BASE_URL}/tickets/${id}/status`,
+      { estado, grupo_id: grupoId },
+      { headers: this.getHeaders() }
+    );
   }
 
   deleteTicket(id: number): Observable<ApiResponse<any>> {

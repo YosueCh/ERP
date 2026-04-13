@@ -120,24 +120,13 @@
       <div class="dialog-row">
         <div class="field">
           <label class="field-label">Nombre del grupo *</label>
-          <input
-            pInputText
-            [(ngModel)]="selectedGroup.nombre"
-            placeholder="Nombre"
-            class="w-full"
-          />
+          <input pInputText [(ngModel)]="selectedGroup.nombre" placeholder="Nombre" class="w-full" />
         </div>
         <div class="field">
           <label class="field-label">Descripción</label>
-          <input
-            pInputText
-            [(ngModel)]="selectedGroup.descripcion"
-            placeholder="Descripción"
-            class="w-full"
-          />
+          <input pInputText [(ngModel)]="selectedGroup.descripcion" placeholder="Descripción" class="w-full" />
         </div>
       </div>
-
 
       <!-- Miembros -->
       <div class="members-section">
@@ -159,7 +148,9 @@
           />
           <datalist id="users-list">
             @for (user of allUsers; track user.id) {
-              <option [value]="user.email">{{ user.nombre }}</option>
+              @if (user.activo) {
+                <option [value]="user.email">{{ user.nombre }}</option>
+              }
             }
           </datalist>
           <p-button label="Añadir" icon="pi pi-user-plus" (onClick)="addMember()" />
@@ -168,16 +159,21 @@
         @if (selectedGroup.miembros.length > 0) {
           <div class="members-list">
             @for (member of selectedGroup.miembros; track member.id) {
-              <div class="member-item">
+              <div class="member-item" [class.member-inactive]="!member.activo">
                 <div class="member-info">
                   <p-avatar
                     [label]="member.nombre.charAt(0)"
                     shape="circle"
-                    [style]="{ background: 'rgba(99,102,241,0.2)', color: '#818cf8' }"
+                    [style]="{ background: member.activo ? 'rgba(99,102,241,0.2)' : 'rgba(239,68,68,0.15)', color: member.activo ? '#818cf8' : '#f87171' }"
                   />
                   <div class="member-text">
                     <span class="member-name">{{ member.nombre }}</span>
                     <span class="member-email">{{ member.email }}</span>
+                    @if (!member.activo) {
+                      <span class="member-inactive-badge">
+                        <i class="pi pi-ban"></i> Cuenta inactiva
+                      </span>
+                    }
                   </div>
                 </div>
                 <div class="member-actions">
@@ -212,11 +208,12 @@
     </div>
 
     <ng-template pTemplate="footer">
-      <div class="dialog-footer-actions">
+      <div class="perm-footer">
         <p-button
           label="Cancelar"
+          icon="pi pi-times"
           severity="secondary"
-          [text]="true"
+          [outlined]="true"
           (onClick)="dialogVisible = false"
         />
         <p-button
@@ -241,11 +238,11 @@
         <div class="perm-group">
           <div class="perm-group-title">{{ grupo }}</div>
           <div class="perm-list">
-            @for (perm of getPermsByGroup(grupo); track perm.id) {
+            @for (perm of getMemberPermsByGroup(grupo); track perm.id) {
               <div class="perm-row">
-                <span class="perm-label">{{ perm.label }}</span>
+                <span class="perm-label">{{ getPermisoLabel(perm) }}</span>
                 <p-toggleswitch
-                  [ngModel]="hasPermiso(perm.clave)"
+                  [(ngModel)]="perm.activo"
                   (ngModelChange)="togglePermiso(perm.clave, $event)"
                 />
               </div>
@@ -256,13 +253,16 @@
     </div>
 
     <ng-template pTemplate="footer">
-      <p-button
-        label="Cancelar"
-        severity="secondary"
-        [text]="true"
-        (onClick)="permDialogVisible = false"
-      />
-      <p-button label="Guardar permisos" icon="pi pi-check" (onClick)="savePermissions()" />
+      <div class="perm-footer">
+        <p-button
+          label="Cancelar"
+          icon="pi pi-times"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="permDialogVisible = false"
+        />
+        <p-button label="Guardar permisos" icon="pi pi-check" (onClick)="savePermissions()" />
+      </div>
     </ng-template>
   </p-dialog>
 </div>

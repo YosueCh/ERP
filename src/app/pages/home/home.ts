@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,38 +20,33 @@ import { PermissionsService } from '../../core/services/permissions';
   selector: 'app-home',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    CardModule,
-    ButtonModule,
-    TagModule,
-    SelectModule,
-    ChartModule,
-    SkeletonModule,
-    ToastModule,
+    CommonModule, FormsModule,
+    CardModule, ButtonModule, TagModule,
+    SelectModule, ChartModule, SkeletonModule, ToastModule,
   ],
   providers: [MessageService],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
 export class HomeComponent implements OnInit {
-  grupos: any[]    = [];
+  grupos: any[]      = [];
   selectedGroup: any = null;
-  stats: any       = null;
-  loading          = true;
-  loadingStats     = false;
+  stats: any         = null;
+  loading            = true;
+  loadingStats       = false;
 
- readonly today: string = new Date().toLocaleDateString('es-MX', {
-    weekday: 'long',
-    year:    'numeric',
-    month:   'long',
-    day:     'numeric',
+  // Stats por grupo (para la gráfica comparativa)
+  gruposStats: { nombre: string; total: number }[] = [];
+  grupoChartData: any    = null;
+  grupoChartOptions: any = null;
+
+  readonly today: string = new Date().toLocaleDateString('es-MX', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
-  // Chart data
-  estadoChartData: any  = null;
-  estadoChartOptions: any = null;
-  prioridadChartData: any = null;
+  estadoChartData: any     = null;
+  estadoChartOptions: any  = null;
+  prioridadChartData: any  = null;
   prioridadChartOptions: any = null;
 
   constructor(
@@ -62,9 +57,7 @@ export class HomeComponent implements OnInit {
     private messageService: MessageService,
   ) {}
 
-  get user() {
-    return this.authService.currentUser();
-  }
+  get user() { return this.authService.currentUser(); }
 
   ngOnInit(): void {
     this.loadGroups();
@@ -83,15 +76,31 @@ export class HomeComponent implements OnInit {
       if (this.grupos.length > 0) {
         this.selectedGroup = this.grupos[0];
         await this.onGroupChange(this.selectedGroup);
+
+        // Cargar stats de todos los grupos si hay más de uno
+        if (this.grupos.length > 1) {
+          await this.loadGruposStats();
+        }
       }
-    } catch (err) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'No se pudieron cargar los grupos',
-      });
+    } catch {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los grupos' });
     } finally {
       this.loading = false;
+    }
+  }
+
+  async loadGruposStats(): Promise<void> {
+    try {
+      const statsPromises = this.grupos.map(g =>
+        this.apiService.getTicketStats(g.id).toPromise().then(res => ({
+          nombre: g.nombre,
+          total:  res?.data?.total ?? 0,
+        }))
+      );
+      this.gruposStats = await Promise.all(statsPromises);
+      this.updateGrupoChart();
+    } catch {
+      console.error('Error cargando stats por grupo');
     }
   }
 
@@ -108,74 +117,56 @@ export class HomeComponent implements OnInit {
       const response = await this.apiService.getTicketStats(groupId).toPromise();
       this.stats = response?.data;
       this.updateCharts();
-    } catch (err) {
-      console.error('Error cargando stats:', err);
+    } catch {
+      console.error('Error cargando stats');
     } finally {
       this.loadingStats = false;
     }
   }
 
   setupChartOptions(): void {
-    const textColor      = '#94a3b8';
-    const gridColor      = 'rgba(148, 163, 184, 0.1)';
+    const textColor = '#94a3b8';
+    const gridColor = 'rgba(148, 163, 184, 0.1)';
 
     this.estadoChartOptions = {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { color: textColor, padding: 16, font: { size: 12 } },
-        },
+        legend: { position: 'bottom', labels: { color: textColor, padding: 16, font: { size: 12 } } },
       },
     };
 
     this.prioridadChartOptions = {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-      },
+      plugins: { legend: { display: false } },
       scales: {
-        x: {
-          ticks: { color: textColor },
-          grid:  { color: gridColor },
-        },
-        y: {
-          ticks: { color: textColor, stepSize: 1 },
-          grid:  { color: gridColor },
-          beginAtZero: true,
-        },
+        x: { ticks: { color: textColor }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor, stepSize: 1 }, grid: { color: gridColor }, beginAtZero: true },
+      },
+    };
+
+    this.grupoChartOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: textColor }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor, stepSize: 1 }, grid: { color: gridColor }, beginAtZero: true },
       },
     };
   }
 
   updateCharts(): void {
     if (!this.stats) return;
-
     const { por_estado, por_prioridad } = this.stats;
 
     this.estadoChartData = {
       labels: ['Pendiente', 'En Progreso', 'Revisión', 'Hecho'],
       datasets: [{
-        data: [
-          por_estado.pendiente,
-          por_estado.en_progreso,
-          por_estado.revision,
-          por_estado.hecho,
-        ],
-        backgroundColor: [
-          'rgba(245, 158, 11, 0.8)',
-          'rgba(59, 130, 246, 0.8)',
-          'rgba(168, 85, 247, 0.8)',
-          'rgba(16, 185, 129, 0.8)',
-        ],
-        borderColor: [
-          '#f59e0b',
-          '#3b82f6',
-          '#a855f7',
-          '#10b981',
-        ],
+        data: [por_estado.pendiente, por_estado.en_progreso, por_estado.revision, por_estado.hecho],
+        backgroundColor: ['rgba(245,158,11,0.8)', 'rgba(59,130,246,0.8)', 'rgba(168,85,247,0.8)', 'rgba(16,185,129,0.8)'],
+        borderColor: ['#f59e0b', '#3b82f6', '#a855f7', '#10b981'],
         borderWidth: 2,
       }],
     };
@@ -184,28 +175,34 @@ export class HomeComponent implements OnInit {
       labels: ['Baja', 'Media', 'Alta'],
       datasets: [{
         label: 'Tickets',
-        data: [
-          por_prioridad.baja,
-          por_prioridad.media,
-          por_prioridad.alta,
-        ],
-        backgroundColor: [
-          'rgba(16, 185, 129, 0.7)',
-          'rgba(245, 158, 11, 0.7)',
-          'rgba(239, 68, 68, 0.7)',
-        ],
+        data: [por_prioridad.baja, por_prioridad.media, por_prioridad.alta],
+        backgroundColor: ['rgba(16,185,129,0.7)', 'rgba(245,158,11,0.7)', 'rgba(239,68,68,0.7)'],
         borderColor: ['#10b981', '#f59e0b', '#ef4444'],
-        borderWidth: 2,
-        borderRadius: 8,
+        borderWidth: 2, borderRadius: 8,
+      }],
+    };
+  }
+
+  updateGrupoChart(): void {
+    if (!this.gruposStats.length) return;
+
+    const colors = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#3b82f6'];
+
+    this.grupoChartData = {
+      labels: this.gruposStats.map(g => g.nombre),
+      datasets: [{
+        label: 'Tickets totales',
+        data: this.gruposStats.map(g => g.total),
+        backgroundColor: this.gruposStats.map((_, i) => colors[i % colors.length] + 'cc'),
+        borderColor: this.gruposStats.map((_, i) => colors[i % colors.length]),
+        borderWidth: 2, borderRadius: 8,
       }],
     };
   }
 
   goToGroup(group: any): void {
     this.permissionsService.refreshPermissionsForGroup(String(group.id));
-    this.router.navigate(['/group-dashboard', group.id], {
-      state: { group },
-    });
+    this.router.navigate(['/group-dashboard', group.id], { state: { group } });
   }
 
   getGroupInitial(nombre: string): string {

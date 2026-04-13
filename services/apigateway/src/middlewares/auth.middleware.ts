@@ -28,8 +28,7 @@ export function verifyPermission(permission: string) {
         });
       }
 
-      const permissionsByGroup = user.permissionsByGroup ?? {};
-      const groupPerms: string[] = permissionsByGroup[String(groupId)] ?? [];
+      const groupPerms: string[] = user.permissionsByGroup?.[String(groupId)] ?? [];
 
       if (!groupPerms.includes(permission)) {
         return reply.code(403).send({

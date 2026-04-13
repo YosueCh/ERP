@@ -67,25 +67,33 @@ export class AdminGroupsComponent implements OnInit {
     private messageService: MessageService,
   ) {}
 
-  ngOnInit(): void {
-    this.loadGroups();
-    this.loadUsers();
-    this.loadPermisos();
+  getPermisoLabel(permiso: any): string {
+  const labelMap: Record<string, string> = {
+    'ticket:edit_state': 'Mover todos los tickets',
+  };
+  return labelMap[permiso.clave] ?? permiso.label;
+  }
+  async ngOnInit(): Promise<void> {
+    await this.loadUsers();    // primero usuarios (necesario para cruzar activo)
+    await this.loadPermisos(); // luego permisos
+    await this.loadGroups();   // luego grupos (ya tiene allUsers disponible)
   }
 
   async loadGroups(): Promise<void> {
-  this.loading = true;
-  try {
-    const response = await this.apiService.getGroups().toPromise();
-    console.log('grupos raw:', response?.data); // ← aquí
-    this.groups = (response?.data ?? []).map((g: any) => ({
-  id:          g.id,
-  nombre:      g.nombre,
-  descripcion: g.descripcion ?? '',
-  autor:       g.autor?.nombre ?? 'Sin autor',
-  integrantes: g.miembros?.length ?? 0,
-  miembros:    (g.miembros ?? []).filter((m: any) => m && m.id),
-}));
+    this.loading = true;
+    try {
+      const response = await this.apiService.getGroups().toPromise();
+      this.groups = (response?.data ?? []).map((g: any) => ({
+        id:          g.id,
+        nombre:      g.nombre,
+        descripcion: g.descripcion ?? '',
+        autor:       g.autor?.nombre ?? 'Sin autor',
+        integrantes: g.miembros?.length ?? 0,
+        miembros:    (g.miembros ?? []).filter((m: any) => m && m.id).map((m: any) => {
+          const userFull = this.allUsers.find((u: any) => u.id === m.id);
+          return { ...m, activo: userFull?.activo ?? true };
+        }),
+      }));
     } catch {
       this.messageService.add({
         severity: 'error',
@@ -132,6 +140,10 @@ export class AdminGroupsComponent implements OnInit {
 
   getPermsByGroup(grupo: string): any[] {
     return this.allPermisos.filter((p: any) => p.grupo === grupo);
+  }
+
+  getMemberPermsByGroup(grupo: string): any[] {
+    return this.memberPermisos.filter((p: any) => p.grupo === grupo);
   }
 
   hasPermiso(clave: string): boolean {
@@ -217,6 +229,15 @@ export class AdminGroupsComponent implements OnInit {
       return;
     }
 
+    if (!user.activo) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Usuario inactivo',
+        detail: 'No puedes agregar un usuario con cuenta desactivada',
+      });
+      return;
+    }
+
     const exists = this.selectedGroup.miembros.some((m: any) => m.id === user.id);
     if (exists) {
       this.messageService.add({
@@ -248,11 +269,7 @@ export class AdminGroupsComponent implements OnInit {
   }
 
   async removeMember(member: any): Promise<void> {
-  console.log('group id:', this.selectedGroup.id, typeof this.selectedGroup.id);
-  console.log('member id:', member.id, typeof member.id);
-  console.log('URL:', `http://localhost:3000/groups/${this.selectedGroup.id}/members/${member.id}`);
-  
-  try {
+    try {
       if (this.isEditing) {
         await this.apiService.removeMember(this.selectedGroup.id, member.id).toPromise();
       }
@@ -281,10 +298,22 @@ export class AdminGroupsComponent implements OnInit {
     try {
       const response = await this.apiService.getGroupPermissions(group.id, member.id).toPromise();
       const data = response?.data ?? [];
-      this.memberPermisos = data.map((p: any) => ({
-        ...p.permisos,
-        permiso_id: p.permiso_id,
-        activo: p.activo,
+
+      const activosMap: Record<string, { permiso_id: number; activo: boolean }> = {};
+      for (const p of data) {
+        activosMap[p.permisos.clave] = {
+          permiso_id: p.permiso_id,
+          activo: p.activo,
+        };
+      }
+
+      this.memberPermisos = this.allPermisos.map((p: any) => ({
+        id:         p.id,
+        clave:      p.clave,
+        grupo:      p.grupo,
+        label:      p.label,
+        permiso_id: activosMap[p.clave]?.permiso_id ?? p.id,
+        activo:     activosMap[p.clave]?.activo ?? false,
       }));
     } catch {
       console.error('Error cargando permisos del miembro');
@@ -294,15 +323,8 @@ export class AdminGroupsComponent implements OnInit {
   }
 
   togglePermiso(clave: string, activo: boolean): void {
-    const idx = this.memberPermisos.findIndex((p: any) => p.clave === clave);
-    if (idx >= 0) {
-      this.memberPermisos[idx].activo = activo;
-    } else {
-      const permiso = this.allPermisos.find((p: any) => p.clave === clave);
-      if (permiso) {
-        this.memberPermisos.push({ ...permiso, permiso_id: permiso.id, activo });
-      }
-    }
+    const perm = this.memberPermisos.find((p: any) => p.clave === clave);
+    if (perm) perm.activo = activo;
   }
 
   async savePermissions(): Promise<void> {
@@ -314,6 +336,7 @@ export class AdminGroupsComponent implements OnInit {
 
       await this.apiService
         .updateGroupPermissions(this.selectedGroup.id, {
+          grupo_id:   this.selectedGroup.id,
           usuario_id: this.selectedMember.id,
           permisos,
         })

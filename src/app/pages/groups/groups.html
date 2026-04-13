@@ -2,6 +2,7 @@
 
 <div class="page-container">
 
+  <!-- Header -->
   <div class="page-header">
     <div class="flex flex-column gap-1">
       <h1 class="page-title">Mis grupos</h1>
@@ -9,6 +10,7 @@
     </div>
   </div>
 
+  <!-- Stats -->
   <div class="stats-row">
     <div class="stat-card">
       <div class="stat-icon" style="background: rgba(99,102,241,0.15)">
@@ -16,7 +18,7 @@
       </div>
       <div class="stat-info">
         <span class="stat-number">{{ groups.length }}</span>
-        <span class="stat-label">Grupos</span>
+        <span class="stat-label">Total grupos</span>
       </div>
     </div>
     <div class="stat-card">
@@ -30,7 +32,7 @@
     </div>
     <div class="stat-card">
       <div class="stat-icon" style="background: rgba(245,158,11,0.15)">
-        <i class="pi pi-ticket" style="color: #fbbf24"></i>
+        <i class="pi pi-filter" style="color: #fbbf24"></i>
       </div>
       <div class="stat-info">
         <span class="stat-number">{{ filteredGroups.length }}</span>
@@ -39,6 +41,7 @@
     </div>
   </div>
 
+  <!-- Controls -->
   <div class="controls-row">
     <div class="search-wrap">
       <i class="pi pi-search search-icon"></i>
@@ -49,83 +52,73 @@
         class="search-input"
       />
     </div>
-
     <div class="filter-tabs">
-      <button
-        class="filter-tab"
-        [class.active]="activeFilter === 'todos'"
-        (click)="activeFilter = 'todos'"
-      >
+      <button class="filter-tab" [class.active]="activeFilter === 'todos'" (click)="activeFilter = 'todos'">
         Todos
       </button>
-      <button
-        class="filter-tab"
-        [class.active]="activeFilter === 'recientes'"
-        (click)="activeFilter = 'recientes'"
-      >
+      <button class="filter-tab" [class.active]="activeFilter === 'recientes'" (click)="activeFilter = 'recientes'">
         Recientes
       </button>
     </div>
   </div>
 
+  <!-- Grid -->
   @if (loading) {
     <div class="groups-grid">
       @for (i of [1,2,3,4,5,6]; track i) {
-        <p-skeleton height="180px" borderRadius="16px" />
+        <p-skeleton height="200px" borderRadius="16px" />
       }
     </div>
+  } @else if (filteredGroups.length === 0) {
+    <div class="empty-state">
+      <i class="pi pi-search"></i>
+      <span>No se encontraron grupos</span>
+      <small>Intenta con otro término de búsqueda</small>
+    </div>
   } @else {
-    @if (filteredGroups.length === 0) {
-      <div class="empty-state">
-        <i class="pi pi-search"></i>
-        <span>No se encontraron grupos</span>
-        <small>Intenta con otro término de búsqueda</small>
-      </div>
-    } @else {
-      <div class="groups-grid">
-        @for (group of filteredGroups; track group.id) {
-          <div class="group-card" (click)="goToGroupDashboard(group)">
+    <div class="groups-grid">
+      @for (group of filteredGroups; track group.id) {
+        <div class="group-card" (click)="goToGroupDashboard(group)">
 
-            <div class="group-card-header">
-              <div class="group-avatar">{{ group.nombre.charAt(0) }}</div>
-              <div class="group-meta">
-                <span class="group-name">{{ group.nombre }}</span>
-                <span class="group-autor">
-                  <i class="pi pi-user" style="font-size: 0.7rem"></i>
-                  {{ group.autor }}
-                </span>
-              </div>
-            </div>
-
-            <p class="group-desc">{{ group.descripcion || 'Sin descripción' }}</p>
-
-            <div class="group-tags">
-              <span class="group-tag members">
-                <i class="pi pi-users"></i>
-                {{ group.integrantes }} miembros
+          <div class="group-card-header">
+            <div class="group-avatar">{{ group.nombre.charAt(0) }}</div>
+            <div class="group-meta">
+              <span class="group-name">{{ group.nombre }}</span>
+              <span class="group-autor">
+                <i class="pi pi-user" style="font-size: 0.7rem"></i>
+                {{ group.autor }}
               </span>
             </div>
-
-            <div class="group-card-footer">
-              <div class="member-avatars">
-                @for (i of getMemberRange(group.integrantes); track i) {
-                  <div class="member-dot" [style]="{ background: getMemberColor(i) }">
-                    {{ i + 1 }}
-                  </div>
-                }
-                @if (group.integrantes > 3) {
-                  <div class="member-dot more">+{{ group.integrantes - 3 }}</div>
-                }
-              </div>
-              <span class="group-enter">
-                Entrar <i class="pi pi-arrow-right"></i>
-              </span>
-            </div>
-
           </div>
-        }
-      </div>
-    }
+
+          <p class="group-desc">{{ group.descripcion || 'Sin descripción' }}</p>
+
+          <div class="group-tags">
+            <span class="group-tag members">
+              <i class="pi pi-users"></i>
+              {{ group.integrantes }} miembros
+            </span>
+          </div>
+
+          <div class="group-card-footer">
+            <div class="member-avatars">
+              @for (i of getMemberRange(group.integrantes); track i) {
+                <div class="member-dot" [style]="{ background: getMemberColor(i) }">
+                  {{ i + 1 }}
+                </div>
+              }
+              @if (group.integrantes > 3) {
+                <div class="member-dot more">+{{ group.integrantes - 3 }}</div>
+              }
+            </div>
+            <span class="group-enter">
+              Entrar <i class="pi pi-arrow-right"></i>
+            </span>
+          </div>
+
+        </div>
+      }
+    </div>
   }
 
 </div>

@@ -1,6 +1,7 @@
 <p-toast />
 
 <div class="dashboard-container">
+
   <!-- Header -->
   <div class="dashboard-header">
     <div class="header-left">
@@ -45,10 +46,8 @@
   <!-- Loading skeleton -->
   @if (loading) {
     <div class="stats-grid">
-      @for (i of [1, 2, 3, 4]; track i) {
-        <p-card styleClass="stat-card">
-          <p-skeleton height="80px" />
-        </p-card>
+      @for (i of [1, 2, 3, 4, 5]; track i) {
+        <p-card><p-skeleton height="80px" /></p-card>
       }
     </div>
   }
@@ -57,39 +56,35 @@
   @if (!loading && stats) {
     <div class="stats-grid">
       <div class="stat-card total">
-        <div class="stat-icon">
-          <i class="pi pi-ticket"></i>
-        </div>
+        <div class="stat-icon"><i class="pi pi-ticket"></i></div>
         <div class="stat-info">
           <span class="stat-number">{{ stats.total }}</span>
           <span class="stat-label">Total tickets</span>
         </div>
       </div>
-
       <div class="stat-card pendiente">
-        <div class="stat-icon">
-          <i class="pi pi-clock"></i>
-        </div>
+        <div class="stat-icon"><i class="pi pi-clock"></i></div>
         <div class="stat-info">
           <span class="stat-number">{{ stats.por_estado.pendiente }}</span>
           <span class="stat-label">Pendientes</span>
         </div>
       </div>
-
       <div class="stat-card progreso">
-        <div class="stat-icon">
-          <i class="pi pi-spin pi-spinner"></i>
-        </div>
+        <div class="stat-icon"><i class="pi pi-spin pi-spinner"></i></div>
         <div class="stat-info">
           <span class="stat-number">{{ stats.por_estado.en_progreso }}</span>
           <span class="stat-label">En progreso</span>
         </div>
       </div>
-
-      <div class="stat-card hecho">
-        <div class="stat-icon">
-          <i class="pi pi-check-circle"></i>
+      <div class="stat-card revision">
+        <div class="stat-icon"><i class="pi pi-search"></i></div>
+        <div class="stat-info">
+          <span class="stat-number">{{ stats.por_estado.revision }}</span>
+          <span class="stat-label">En revisión</span>
         </div>
+      </div>
+      <div class="stat-card hecho">
+        <div class="stat-icon"><i class="pi pi-check-circle"></i></div>
         <div class="stat-info">
           <span class="stat-number">{{ stats.por_estado.hecho }}</span>
           <span class="stat-label">Completados</span>
@@ -97,30 +92,56 @@
       </div>
     </div>
 
-    <!-- Charts -->
+    <!-- Charts estado y prioridad -->
     <div class="charts-grid">
-      <p-card header="Tickets por estado" styleClass="chart-card">
+      <p-card styleClass="chart-card">
+        <ng-template pTemplate="header">
+          <div class="chart-header">
+            <div class="chart-header-icon-wrap"><i class="pi pi-chart-pie"></i></div>
+            <div class="chart-header-info">
+              <span class="chart-header-title">Tickets por estado</span>
+              <span class="chart-header-sub">Distribución actual del grupo</span>
+            </div>
+          </div>
+        </ng-template>
         <div class="chart-wrapper">
-          <p-chart
-            type="doughnut"
-            [data]="estadoChartData"
-            [options]="estadoChartOptions"
-            height="250px"
-          />
+          <p-chart type="doughnut" [data]="estadoChartData" [options]="estadoChartOptions" height="250px" />
         </div>
       </p-card>
 
-      <p-card header="Tickets por prioridad" styleClass="chart-card">
+      <p-card styleClass="chart-card">
+        <ng-template pTemplate="header">
+          <div class="chart-header">
+            <div class="chart-header-icon-wrap"><i class="pi pi-chart-bar"></i></div>
+            <div class="chart-header-info">
+              <span class="chart-header-title">Tickets por prioridad</span>
+              <span class="chart-header-sub">Nivel de urgencia del grupo</span>
+            </div>
+          </div>
+        </ng-template>
         <div class="chart-wrapper">
-          <p-chart
-            type="bar"
-            [data]="prioridadChartData"
-            [options]="prioridadChartOptions"
-            height="250px"
-          />
+          <p-chart type="bar" [data]="prioridadChartData" [options]="prioridadChartOptions" height="250px" />
         </div>
       </p-card>
     </div>
+
+    <!-- Chart tickets por grupo — solo si hay más de un grupo -->
+    @if (grupos.length > 1 && grupoChartData) {
+      <p-card styleClass="chart-card">
+        <ng-template pTemplate="header">
+          <div class="chart-header">
+            <div class="chart-header-icon-wrap"><i class="pi pi-th-large"></i></div>
+            <div class="chart-header-info">
+              <span class="chart-header-title">Tickets por grupo</span>
+              <span class="chart-header-sub">Comparativa entre tus grupos</span>
+            </div>
+          </div>
+        </ng-template>
+        <div class="chart-wrapper">
+          <p-chart type="bar" [data]="grupoChartData" [options]="grupoChartOptions" height="250px" />
+        </div>
+      </p-card>
+    }
   }
 
   <!-- Grupos -->
@@ -132,9 +153,7 @@
   @if (loading) {
     <div class="groups-grid">
       @for (i of [1, 2, 3]; track i) {
-        <p-card styleClass="group-card">
-          <p-skeleton height="120px" />
-        </p-card>
+        <p-skeleton height="72px" borderRadius="12px" />
       }
     </div>
   }
@@ -147,16 +166,12 @@
           [class.active]="selectedGroup?.id === group.id"
           (click)="goToGroup(group)"
         >
-          <div class="group-avatar">
-            {{ getGroupInitial(group.nombre) }}
-          </div>
+          <div class="group-avatar">{{ getGroupInitial(group.nombre) }}</div>
           <div class="group-info">
             <span class="group-name">{{ group.nombre }}</span>
             <span class="group-desc">{{ group.descripcion ?? 'Sin descripción' }}</span>
           </div>
-          <div class="group-arrow">
-            <i class="pi pi-chevron-right"></i>
-          </div>
+          <div class="group-arrow"><i class="pi pi-chevron-right"></i></div>
         </div>
       }
 
@@ -168,4 +183,5 @@
       }
     </div>
   }
+
 </div>

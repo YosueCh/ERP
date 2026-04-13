@@ -89,19 +89,26 @@ export async function ticketRoutes(fastify: FastifyInstance) {
   // ── POST /tickets ─────────────────────────────────────────
   fastify.post('/tickets', { schema: createTicketSchema }, async (request: FastifyRequest, reply: FastifyReply) => {
     const body = request.body as any;
+
+    try {
+      await request.jwtVerify();
+    } catch {
+      return reply.code(401).send(res(401, 'SxTS401', 'Token inválido'));
+    }
+
     const creadoPor = (request as any).user?.id;
 
     const { data, error } = await supabase
       .from('tickets')
       .insert({
-        grupo_id:    body.grupo_id,
-        titulo:      body.titulo,
-        descripcion: body.descripcion,
-        estado:      body.estado ?? 'pendiente',
-        prioridad:   body.prioridad ?? 'media',
-        asignado_a:  body.asignado_a ?? null,
-        creado_por:  creadoPor,
-        fecha_limite: body.fecha_limite ?? null,
+        grupo_id:     body.grupo_id,
+        titulo:       body.titulo,
+        descripcion:  body.descripcion,
+        estado:       body.estado ?? 'pendiente',
+        prioridad:    body.prioridad ?? 'media',
+        asignado_a:   body.asignado_a || null,
+        creado_por:   creadoPor,
+        fecha_limite: body.fecha_limite || null,
       })
       .select('id, titulo, estado, prioridad, created_at')
       .single();
@@ -110,7 +117,6 @@ export async function ticketRoutes(fastify: FastifyInstance) {
       return reply.code(500).send(res(500, 'SxTS500', 'Error al crear ticket'));
     }
 
-    // Registrar en historial
     await supabase.from('ticket_historial').insert({
       ticket_id: data.id,
       autor_id:  creadoPor,
@@ -124,11 +130,52 @@ export async function ticketRoutes(fastify: FastifyInstance) {
   fastify.put('/tickets/:id', { schema: updateTicketSchema }, async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as any;
     const body = request.body as any;
+
+    try {
+      await request.jwtVerify();
+    } catch {
+      return reply.code(401).send(res(401, 'SxTS401', 'Token inválido'));
+    }
+
     const autorId = (request as any).user?.id;
+
+    // Verificar si es el creador del ticket
+    const { data: ticket } = await supabase
+      .from('tickets')
+      .select('id, creado_por')
+      .eq('id', id)
+      .single();
+
+    const esCreadoPor = ticket?.creado_por === autorId;
+
+    // Si no es el creador, verificar permiso ticket:edit (id=6)
+    if (!esCreadoPor) {
+      const { data: permiso } = await supabase
+        .from('usuario_grupo_permisos')
+        .select('permiso_id, activo')
+        .eq('usuario_id', autorId)
+        .eq('grupo_id', body.grupo_id)
+        .eq('permiso_id', 6)
+        .eq('activo', true)
+        .single();
+
+      if (!permiso) {
+        return reply.code(403).send(res(403, 'SxTS403',
+          'No tienes permiso para editar este ticket'
+        ));
+      }
+    }
 
     const { data, error } = await supabase
       .from('tickets')
-      .update(body)
+      .update({
+        titulo:       body.titulo,
+        descripcion:  body.descripcion,
+        estado:       body.estado,
+        prioridad:    body.prioridad,
+        asignado_a:   body.asignado_a || null,
+        fecha_limite: body.fecha_limite || null,
+      })
       .eq('id', id)
       .select('id, titulo, estado, prioridad')
       .single();
@@ -146,10 +193,17 @@ export async function ticketRoutes(fastify: FastifyInstance) {
     return reply.code(200).send(res(200, 'SxTS200', data));
   });
 
-  // ── PATCH /tickets/:id/status ─────────────────────────────
+  // ── PATCH /tickets/:id/status — solo actualiza, gateway ya validó ─────────
   fastify.patch('/tickets/:id/status', { schema: updateEstadoSchema }, async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as any;
     const { estado } = request.body as any;
+
+    try {
+      await request.jwtVerify();
+    } catch {
+      return reply.code(401).send(res(401, 'SxTS401', 'Token inválido'));
+    }
+
     const autorId = (request as any).user?.id;
 
     const { data, error } = await supabase
@@ -192,6 +246,13 @@ export async function ticketRoutes(fastify: FastifyInstance) {
   fastify.post('/tickets/:id/comments', { schema: addComentarioSchema }, async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as any;
     const { mensaje } = request.body as any;
+
+    try {
+      await request.jwtVerify();
+    } catch {
+      return reply.code(401).send(res(401, 'SxTS401', 'Token inválido'));
+    }
+
     const autorId = (request as any).user?.id;
 
     const { data, error } = await supabase
