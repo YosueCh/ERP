@@ -42,8 +42,7 @@ interface RegisterResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API_URL  = 'http://localhost:3000';
-  private readonly TOKEN_KEY = 'auth_token';
+  private readonly API_URL = 'https://erp-production-963a.up.railway.app';  private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY  = 'auth_user';
   private readonly PERMS_KEY = 'auth_perms_by_group';
 
