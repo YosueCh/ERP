@@ -11,7 +11,7 @@ export interface ApiResponse<T> {
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private readonly BASE_URL = 'http://localhost:3000';
+  private readonly BASE_URL = 'https://erp-production-963a.up.railway.app';
 
   constructor(
     private http: HttpClient,
