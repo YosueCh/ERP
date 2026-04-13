@@ -1,0 +1,24 @@
+{
+    "experimentalServices": {
+        "frontend": {
+            "routePrefix": "/",
+            "framework": "angular"
+        },
+        "apigateway": {
+            "entrypoint": "services/apigateway",
+            "routePrefix": "/_/apigateway"
+        },
+        "groups": {
+            "entrypoint": "services/groups",
+            "routePrefix": "/_/groups"
+        },
+        "tickets": {
+            "entrypoint": "services/tickets",
+            "routePrefix": "/_/tickets"
+        },
+        "user": {
+            "entrypoint": "services/user",
+            "routePrefix": "/_/user"
+        }
+    }
+}
