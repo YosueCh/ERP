@@ -377,13 +377,14 @@
     </div>
   }
   <ng-template pTemplate="footer">
-    <div class="perm-footer">
-      <p-button label="Cerrar" icon="pi pi-times" severity="secondary" [outlined]="true" (click)="detailVisible = false" />
-      @if (selectedTicket && canEditFull(selectedTicket)) {
-        <p-button label="Editar" icon="pi pi-pencil" (click)="openEdit()" />
-      }
-    </div>
-  </ng-template>
+  <div class="perm-footer">
+    <p-button label="Cerrar" icon="pi pi-times" severity="secondary" [outlined]="true" (click)="detailVisible = false" />
+    @if (selectedTicket && canEditFull(selectedTicket)) {
+      <p-button label="Editar" icon="pi pi-pencil" (click)="openEdit()" />
+    }
+    <p-button *ifHasPermission="'ticket:delete'" label="Eliminar" icon="pi pi-trash" severity="danger" [outlined]="true" (click)="deleteTicket()" />
+  </div>
+</ng-template>
 </p-dialog>
 
 <!-- ══ Dialog EDITAR ticket ═══════════════════════════════════════════════ -->

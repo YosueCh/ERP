@@ -333,6 +333,19 @@ export class GroupDashboard implements OnInit {
     }
   }
 
+  async deleteTicket(): Promise<void> {
+  if (!this.selectedTicket) return;
+  try {
+    await this.apiService.deleteTicket(this.selectedTicket.id).toPromise();
+    this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Ticket eliminado correctamente' });
+    this.detailVisible = false;
+    this.selectedTicket = null;
+    await this.loadData();
+  } catch {
+    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el ticket' });
+  }
+}
+
   // ── Cambio de estado inline ───────────────────────────────────────────────
   async cambiarEstadoInline(ticket: any, nuevoEstado: TicketEstado): Promise<void> {
     if (!nuevoEstado || nuevoEstado === ticket.estado) return;
