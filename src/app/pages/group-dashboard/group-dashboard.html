@@ -90,171 +90,176 @@
     </button>
   </div>
 
-  <!-- ── Kanban y Lista ─────────────────────────────────────────────────── -->
-  @if (vista === 'kanban') {
-    <div class="kanban-board">
-      @for (col of columnas; track col.estado) {
-        <div class="kanban-col">
-          <div class="kanban-col-header" [style]="{ borderBottomColor: col.color }">
-            <div class="kanban-col-header-left">
-              <div class="kanban-col-dot" [style]="{ background: col.color }"></div>
-              <span class="kanban-col-title">{{ col.label }}</span>
-            </div>
-            <span class="kanban-count" [style]="{ background: col.color + '22', color: col.color }">
-              {{ getTicketsPorEstado(col.estado).length }}
-            </span>
-          </div>
-          <div class="kanban-cards" cdkDropList [id]="col.estado"
-            [cdkDropListData]="getTicketsPorEstado(col.estado)"
-            [cdkDropListConnectedTo]="connectedLists"
-            (cdkDropListDropped)="onDrop($event, col.estado)">
+  <!-- ── Kanban y Lista protegidos por ticket:view ──────────────────────── -->
+  <ng-container *ifHasPermission="'ticket:view'">
 
-            @for (ticket of getTicketsPorEstado(col.estado); track ticket.id) {
-              <div
-                class="ticket-card"
-                [ngClass]="[
-                  'ticket-prioridad-' + ticket.prioridad,
-                  !canMoveTicket(ticket) ? 'ticket-no-drag' : ''
-                ]"
-                cdkDrag
-                [cdkDragDisabled]="!canMoveTicket(ticket)"
-                (click)="openDetail(ticket)"
-              >
-                <div class="ticket-header">
-                  <span class="ticket-id">#{{ ticket.id }}</span>
-                  <p-tag [value]="getPrioridadLabel(ticket.prioridad)" [severity]="getPrioridadSeverity(ticket.prioridad)" />
-                </div>
-                <span class="ticket-titulo">{{ ticket.titulo }}</span>
-                @if (ticket.descripcion) {
-                  <span class="ticket-desc">{{ ticket.descripcion }}</span>
-                }
-                <div class="ticket-footer">
-                  <div class="ticket-assignee">
-                    <div class="ticket-assignee-avatar">{{ ticket.asignadoA?.charAt(0) ?? '?' }}</div>
-                    <span class="ticket-asignado">{{ ticket.asignadoA ?? 'Sin asignar' }}</span>
+    <!-- ── Kanban ─────────────────────────────────────────────────────────── -->
+    @if (vista === 'kanban') {
+      <div class="kanban-board">
+        @for (col of columnas; track col.estado) {
+          <div class="kanban-col">
+            <div class="kanban-col-header" [style]="{ borderBottomColor: col.color }">
+              <div class="kanban-col-header-left">
+                <div class="kanban-col-dot" [style]="{ background: col.color }"></div>
+                <span class="kanban-col-title">{{ col.label }}</span>
+              </div>
+              <span class="kanban-count" [style]="{ background: col.color + '22', color: col.color }">
+                {{ getTicketsPorEstado(col.estado).length }}
+              </span>
+            </div>
+            <div class="kanban-cards" cdkDropList [id]="col.estado"
+              [cdkDropListData]="getTicketsPorEstado(col.estado)"
+              [cdkDropListConnectedTo]="connectedLists"
+              (cdkDropListDropped)="onDrop($event, col.estado)">
+
+              @for (ticket of getTicketsPorEstado(col.estado); track ticket.id) {
+                <div
+                  class="ticket-card"
+                  [ngClass]="[
+                    'ticket-prioridad-' + ticket.prioridad,
+                    !canMoveTicket(ticket) ? 'ticket-no-drag' : ''
+                  ]"
+                  cdkDrag
+                  [cdkDragDisabled]="!canMoveTicket(ticket)"
+                  (click)="openDetail(ticket)"
+                >
+                  <div class="ticket-header">
+                    <span class="ticket-id">#{{ ticket.id }}</span>
+                    <p-tag [value]="getPrioridadLabel(ticket.prioridad)" [severity]="getPrioridadSeverity(ticket.prioridad)" />
                   </div>
-                  @if (ticket.fechaLimite) {
-                    <span class="ticket-fecha">
-                      <i class="pi pi-calendar" style="font-size: 0.7rem"></i>
-                      {{ formatDate(ticket.fechaLimite) }}
-                    </span>
+                  <span class="ticket-titulo">{{ ticket.titulo }}</span>
+                  @if (ticket.descripcion) {
+                    <span class="ticket-desc">{{ ticket.descripcion }}</span>
+                  }
+                  <div class="ticket-footer">
+                    <div class="ticket-assignee">
+                      <div class="ticket-assignee-avatar">{{ ticket.asignadoA?.charAt(0) ?? '?' }}</div>
+                      <span class="ticket-asignado">{{ ticket.asignadoA ?? 'Sin asignar' }}</span>
+                    </div>
+                    @if (ticket.fechaLimite) {
+                      <span class="ticket-fecha">
+                        <i class="pi pi-calendar" style="font-size: 0.7rem"></i>
+                        {{ formatDate(ticket.fechaLimite) }}
+                      </span>
+                    }
+                  </div>
+                  @if (canMoveTicket(ticket)) {
+                    <div class="ticket-estado-inline" (click)="$event.stopPropagation()">
+                      <p-select
+                        [(ngModel)]="ticket.estadoInline"
+                        [options]="estadoOpciones"
+                        optionLabel="label"
+                        optionValue="value"
+                        styleClass="w-full estado-inline-select"
+                        appendTo="body"
+                        (onChange)="cambiarEstadoInline(ticket, $event.value)"
+                      />
+                    </div>
                   }
                 </div>
-                @if (canMoveTicket(ticket)) {
-                  <div class="ticket-estado-inline" (click)="$event.stopPropagation()">
-                    <p-select
-                      [(ngModel)]="ticket.estadoInline"
-                      [options]="estadoOpciones"
-                      optionLabel="label"
-                      optionValue="value"
-                      styleClass="w-full estado-inline-select"
-                      appendTo="body"
-                      (onChange)="cambiarEstadoInline(ticket, $event.value)"
-                    />
-                  </div>
-                }
-              </div>
-            }
+              }
 
-            @if (getTicketsPorEstado(col.estado).length === 0) {
-              <div class="kanban-empty"><i class="pi pi-inbox"></i><span>Sin tickets</span></div>
-            }
-          </div>
-        </div>
-      }
-    </div>
-  }
-
-  <!-- ── Lista ──────────────────────────────────────────────────────────── -->
-  @if (vista === 'lista') {
-    <div class="lista-container">
-      <div class="lista-controls">
-        <div class="lista-control">
-          <label class="field-label">Estado</label>
-          <p-select [(ngModel)]="filtroListaEstado" [options]="estadoFiltroOpciones" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" (onChange)="paginaActual = 1" />
-        </div>
-        <div class="lista-control">
-          <label class="field-label">Prioridad</label>
-          <p-select [(ngModel)]="filtroListaPrioridad" [options]="prioridadFiltroOpciones" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" (onChange)="paginaActual = 1" />
-        </div>
-        <div class="lista-control">
-          <label class="field-label">Asignado a</label>
-          <input pInputText [(ngModel)]="filtroListaAsignado" placeholder="Buscar responsable" class="w-full" (input)="paginaActual = 1" />
-        </div>
-        <div class="lista-control">
-          <label class="field-label">Ordenar por</label>
-          <p-select [(ngModel)]="ordenLista" [options]="ordenOpciones" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" />
-        </div>
-        <div class="lista-control lista-control-action">
-          <p-button label="Limpiar" icon="pi pi-filter-slash" severity="secondary" [outlined]="true" (click)="limpiarFiltrosLista()" />
-        </div>
-      </div>
-
-      <div class="lista-tabla">
-        <div class="lista-header-row lista-header-row-ext">
-          <span>ID / Título</span>
-          <span>Estado</span>
-          <span>Asignado a</span>
-          <span>Prioridad</span>
-          <span>Fecha límite</span>
-          <span>Mover estado</span>
-        </div>
-
-        @for (ticket of ticketsListaPaginados; track ticket.id) {
-          <div class="lista-row lista-row-ext" (click)="openDetail(ticket)">
-            <div class="lista-id-titulo">
-              <span class="ticket-id">#{{ ticket.id }}</span>
-              <span class="ticket-titulo">{{ ticket.titulo }}</span>
-            </div>
-            <p-tag [value]="getEstadoLabel(ticket.estado)" [severity]="getEstadoSeverity(ticket.estado)" />
-            <div class="ticket-assignee">
-              <div class="ticket-assignee-avatar">{{ ticket.asignadoA?.charAt(0) ?? '?' }}</div>
-              <span class="ticket-asignado">{{ ticket.asignadoA ?? 'Sin asignar' }}</span>
-            </div>
-            <p-tag [value]="getPrioridadLabel(ticket.prioridad)" [severity]="getPrioridadSeverity(ticket.prioridad)" />
-            <span class="ticket-fecha">{{ formatDate(ticket.fechaLimite) }}</span>
-            <div (click)="$event.stopPropagation()">
-              @if (canMoveTicket(ticket)) {
-                <p-select
-                  [(ngModel)]="ticket.estadoInline"
-                  [options]="estadoOpciones"
-                  optionLabel="label"
-                  optionValue="value"
-                  styleClass="w-full estado-inline-select"
-                  appendTo="body"
-                  (onChange)="cambiarEstadoInline(ticket, $event.value)"
-                />
-              } @else {
-                <span class="sin-permiso-text">—</span>
+              @if (getTicketsPorEstado(col.estado).length === 0) {
+                <div class="kanban-empty"><i class="pi pi-inbox"></i><span>Sin tickets</span></div>
               }
             </div>
           </div>
         }
-
-        @if (ticketsLista.length === 0) {
-          <div class="lista-empty">
-            <i class="pi pi-inbox" style="font-size: 2rem"></i>
-            <span>No hay tickets con los filtros seleccionados</span>
-          </div>
-        }
-
-        @if (ticketsLista.length > 0) {
-          <div class="lista-paginacion">
-            <button class="pag-btn" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
-              <i class="pi pi-chevron-left"></i>
-            </button>
-            <span class="pag-info">
-              Página {{ paginaActual }} de {{ totalPaginas }}
-              <span class="pag-total">({{ ticketsLista.length }} tickets)</span>
-            </span>
-            <button class="pag-btn" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
-              <i class="pi pi-chevron-right"></i>
-            </button>
-          </div>
-        }
       </div>
-    </div>
-  }
+    }
+
+    <!-- ── Lista ──────────────────────────────────────────────────────────── -->
+    @if (vista === 'lista') {
+      <div class="lista-container">
+        <div class="lista-controls">
+          <div class="lista-control">
+            <label class="field-label">Estado</label>
+            <p-select [(ngModel)]="filtroListaEstado" [options]="estadoFiltroOpciones" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" (onChange)="paginaActual = 1" />
+          </div>
+          <div class="lista-control">
+            <label class="field-label">Prioridad</label>
+            <p-select [(ngModel)]="filtroListaPrioridad" [options]="prioridadFiltroOpciones" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" (onChange)="paginaActual = 1" />
+          </div>
+          <div class="lista-control">
+            <label class="field-label">Asignado a</label>
+            <input pInputText [(ngModel)]="filtroListaAsignado" placeholder="Buscar responsable" class="w-full" (input)="paginaActual = 1" />
+          </div>
+          <div class="lista-control">
+            <label class="field-label">Ordenar por</label>
+            <p-select [(ngModel)]="ordenLista" [options]="ordenOpciones" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" />
+          </div>
+          <div class="lista-control lista-control-action">
+            <p-button label="Limpiar" icon="pi pi-filter-slash" severity="secondary" [outlined]="true" (click)="limpiarFiltrosLista()" />
+          </div>
+        </div>
+
+        <div class="lista-tabla">
+          <div class="lista-header-row lista-header-row-ext">
+            <span>ID / Título</span>
+            <span>Estado</span>
+            <span>Asignado a</span>
+            <span>Prioridad</span>
+            <span>Fecha límite</span>
+            <span>Mover estado</span>
+          </div>
+
+          @for (ticket of ticketsListaPaginados; track ticket.id) {
+            <div class="lista-row lista-row-ext" (click)="openDetail(ticket)">
+              <div class="lista-id-titulo">
+                <span class="ticket-id">#{{ ticket.id }}</span>
+                <span class="ticket-titulo">{{ ticket.titulo }}</span>
+              </div>
+              <p-tag [value]="getEstadoLabel(ticket.estado)" [severity]="getEstadoSeverity(ticket.estado)" />
+              <div class="ticket-assignee">
+                <div class="ticket-assignee-avatar">{{ ticket.asignadoA?.charAt(0) ?? '?' }}</div>
+                <span class="ticket-asignado">{{ ticket.asignadoA ?? 'Sin asignar' }}</span>
+              </div>
+              <p-tag [value]="getPrioridadLabel(ticket.prioridad)" [severity]="getPrioridadSeverity(ticket.prioridad)" />
+              <span class="ticket-fecha">{{ formatDate(ticket.fechaLimite) }}</span>
+              <div (click)="$event.stopPropagation()">
+                @if (canMoveTicket(ticket)) {
+                  <p-select
+                    [(ngModel)]="ticket.estadoInline"
+                    [options]="estadoOpciones"
+                    optionLabel="label"
+                    optionValue="value"
+                    styleClass="w-full estado-inline-select"
+                    appendTo="body"
+                    (onChange)="cambiarEstadoInline(ticket, $event.value)"
+                  />
+                } @else {
+                  <span class="sin-permiso-text">—</span>
+                }
+              </div>
+            </div>
+          }
+
+          @if (ticketsLista.length === 0) {
+            <div class="lista-empty">
+              <i class="pi pi-inbox" style="font-size: 2rem"></i>
+              <span>No hay tickets con los filtros seleccionados</span>
+            </div>
+          }
+
+          @if (ticketsLista.length > 0) {
+            <div class="lista-paginacion">
+              <button class="pag-btn" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
+                <i class="pi pi-chevron-left"></i>
+              </button>
+              <span class="pag-info">
+                Página {{ paginaActual }} de {{ totalPaginas }}
+                <span class="pag-total">({{ ticketsLista.length }} tickets)</span>
+              </span>
+              <button class="pag-btn" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
+                <i class="pi pi-chevron-right"></i>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  </ng-container>
 
 </div>
 
