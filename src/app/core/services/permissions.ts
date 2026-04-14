@@ -6,7 +6,7 @@ export const PERMISSIONS = {
     EDIT:   'group:edit',
     ADD:    'group:add',
     DELETE: 'group:delete',
-    MANAGE: 'group:manage',  
+    MANAGE: 'group:manage',
   },
   TICKET: {
     VIEW:       'ticket:view',
@@ -21,40 +21,54 @@ export const PERMISSIONS = {
     EDIT:     'user:edit',
     ADD:      'user:add',
     DELETE:   'user:delete',
-    MANAGE:   'user:manage',  
+    MANAGE:   'user:manage',
   },
 } as const;
 
 @Injectable({ providedIn: 'root' })
 export class PermissionsService {
-  private userPermissions = signal<string[]>([]);
+  private userPermissions  = signal<string[]>([]);
   private permissionsByGroup = signal<Record<string, string[]>>({});
-  private currentGroupId = signal<string | null>(null);
+  private currentGroupId   = signal<string | null>(null);
+  private adminUser        = signal<boolean>(false);
 
-  // Setear todos los permisos por grupo desde el login
   setPermissionsByGroup(permsByGroup: Record<string, string[]>): void {
     this.permissionsByGroup.set(permsByGroup);
+
+    // Detectar si es admin: tiene todos los permisos clave en algún grupo
+    const adminPerms = [
+      'group:delete', 'ticket:delete', 'user:delete',
+      'ticket:edit_state', 'user:add', 'group:add',
+    ];
+    const isAdmin = Object.values(permsByGroup).some(perms =>
+      adminPerms.every(p => perms.includes(p))
+    );
+    this.adminUser.set(isAdmin);
   }
 
-  // Cambiar el grupo activo y cargar sus permisos
   refreshPermissionsForGroup(groupId: string): void {
     this.currentGroupId.set(groupId);
     const perms = this.permissionsByGroup()[groupId] ?? [];
     this.userPermissions.set(perms);
   }
 
-  // Setear permisos directamente (compatibilidad)
   setPermissions(perms: string[]): void {
     this.userPermissions.set(perms);
+  }
+
+  setIsAdmin(value: boolean): void {
+    this.adminUser.set(value);
   }
 
   clearPermissions(): void {
     this.userPermissions.set([]);
     this.permissionsByGroup.set({});
     this.currentGroupId.set(null);
+    this.adminUser.set(false);
   }
 
   hasPermission(permiso: string): boolean {
+    if (this.adminUser()) return true;
     return this.userPermissions().includes(permiso);
   }
 
@@ -78,9 +92,12 @@ export class PermissionsService {
     return this.currentGroupId();
   }
 
-  // Verifica si tiene permiso en un grupo específico
   hasPermissionInGroup(permiso: string, groupId: string): boolean {
     const perms = this.permissionsByGroup()[groupId] ?? [];
     return perms.includes(permiso);
+  }
+
+  isAdmin(): boolean {
+    return this.adminUser();
   }
 }
