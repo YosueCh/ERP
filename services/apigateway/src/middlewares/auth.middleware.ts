@@ -12,11 +12,27 @@ export async function verifyToken(request: FastifyRequest, reply: FastifyReply) 
   }
 }
 
+function isAdmin(user: any): boolean {
+  return (
+    user?.usuario === 'admin' ||
+    user?.email === 'admin@erp.com' ||
+    Object.values(user?.permissionsByGroup ?? {}).some((perms: any) =>
+      perms.includes('user:delete') &&
+      perms.includes('group:delete') &&
+      perms.includes('ticket:delete')
+    )
+  );
+}
+
 export function verifyPermission(permission: string) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       await request.jwtVerify();
       const user = (request as any).user;
+
+      // Admin bypasses all permission checks
+      if (isAdmin(user)) return;
+
       const groupId = (request.params as any)?.grupo_id
         ?? (request.body as any)?.grupo_id;
 
