@@ -358,27 +358,23 @@ export class AdminGroupsComponent implements OnInit {
   }
 
   confirmDelete(group: any): void {
-    this.confirmationService.confirm({
-      message: `¿Eliminar el grupo "${group.nombre}"?`,
-      header: 'Confirmar eliminación',
-      icon: 'pi pi-trash',
-      accept: async () => {
-        try {
-          await this.apiService.deleteGroup(group.id).toPromise();
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Eliminado',
-            detail: 'Grupo eliminado',
-          });
-          await this.loadGroups();
-        } catch {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'No se pudo eliminar el grupo',
-          });
-        }
-      },
-    });
-  }
+  this.confirmationService.confirm({
+    message: `¿Estás seguro de eliminar el grupo "${group.nombre}"? Esta acción no se puede deshacer.`,
+    header: 'Eliminar grupo',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Sí, eliminar',
+    rejectLabel: 'Cancelar',
+    acceptButtonStyleClass: 'p-button-danger',
+    rejectButtonStyleClass: 'p-button-secondary',
+    accept: async () => {
+      try {
+        await this.apiService.deleteGroup(group.id).toPromise();
+        this.messageService.add({ severity: 'info', summary: 'Eliminado', detail: `Grupo "${group.nombre}" eliminado` });
+        await this.loadGroups();
+      } catch {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el grupo' });
+      }
+    },
+  });
+}
 }

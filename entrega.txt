@@ -1,0 +1,48 @@
+ENTREGA - ERP SEGURIDAD
+=======================
+
+REPOSITORIO
+-----------
+GitHub: https://github.com/YosueCh/ERP
+
+FRONTEND
+--------
+URL: https://erp-two-gilt.vercel.app
+
+BACKEND - API GATEWAY
+---------------------
+URL: https://erp-production-963a.up.railway.app
+
+Health Check:
+  GET https://erp-production-963a.up.railway.app/health
+
+Login:
+  POST https://erp-production-963a.up.railway.app/auth/login
+  Body: {
+    "email": "admin@erp.com",
+    "password": "td7CQ9GPG@&"
+  }
+
+Register:
+  POST https://erp-production-963a.up.railway.app/auth/register
+  Body: {
+    "nombre": "Nombre",
+    "email": "correo@ejemplo.com",
+    "usuario": "usuario",
+    "password": "Contrasena123!",
+    "confirmPassword": "Contrasena123!",
+    "direccion": "Direccion",
+    "telefono": "1234567890",
+    "fecha_nacimiento": "2000-01-01"
+  }
+
+MICROSERVICIOS (Railway - Red Interna)
+--------------------------------------
+User Service:    adventurous-magic.railway.internal:3001
+Tickets Service: divine-celebration.railway.internal:3002
+Groups Service:  virtuous-transformation.railway.internal:3003
+
+BASE DE DATOS
+-------------
+Supabase - Proyecto: ERP SEGURIDAD
+URL: https://botblvlmifsbzrduwqxj.supabase.co

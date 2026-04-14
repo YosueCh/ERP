@@ -20,6 +20,9 @@
           <i class="pi pi-list"></i><span>Lista</span>
         </button>
       </div>
+      <button *ifHasPermission="'group:edit'" type="button" class="manage-members-btn" (click)="openMembersDialog()">
+        <i class="pi pi-users"></i><span>Gestionar miembros</span>
+      </button>
       <button *ifHasPermission="'ticket:add'" type="button" class="create-ticket-btn" (click)="openCrearTicket()">
         <i class="pi pi-plus"></i><span>Crear ticket</span>
       </button>
@@ -27,7 +30,7 @@
   </div>
 
   <!-- ── Integrantes ────────────────────────────────────────────────────── -->
-  <div class="members-section">
+  <div *ifHasPermission="'group:view'" class="members-section">
     <div class="members-section-header">
       <i class="pi pi-users" style="color: #818cf8"></i>
       <span class="members-section-title">Integrantes del grupo</span>
@@ -40,7 +43,7 @@
             <div class="member-card-avatar">{{ member.nombre.charAt(0) }}</div>
             <div class="member-card-info">
               <span class="member-card-name">{{ member.nombre }}</span>
-              <span class="member-card-email">{{ member.email }}</span>
+              <span *ifHasPermission="'user:view'" class="member-card-email">{{ member.email }}</span>
             </div>
           </div>
         }
@@ -87,7 +90,7 @@
     </button>
   </div>
 
-  <!-- ── Kanban ─────────────────────────────────────────────────────────── -->
+  <!-- ── Kanban y Lista ─────────────────────────────────────────────────── -->
   @if (vista === 'kanban') {
     <div class="kanban-board">
       @for (col of columnas; track col.estado) {
@@ -137,7 +140,6 @@
                     </span>
                   }
                 </div>
-
                 @if (canMoveTicket(ticket)) {
                   <div class="ticket-estado-inline" (click)="$event.stopPropagation()">
                     <p-select
@@ -236,7 +238,6 @@
           </div>
         }
 
-        <!-- Paginación -->
         @if (ticketsLista.length > 0) {
           <div class="lista-paginacion">
             <button class="pag-btn" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
@@ -254,6 +255,7 @@
       </div>
     </div>
   }
+
 </div>
 
 <!-- ══ Dialog CREAR ticket ════════════════════════════════════════════════ -->
@@ -281,7 +283,7 @@
     <div class="dialog-row">
       <div class="field">
         <label class="field-label">Asignar a</label>
-        <p-select [(ngModel)]="nuevoTicket.asignadoId" [options]="miembrosOpciones" optionLabel="label" optionValue="value"
+        <p-select [(ngModel)]="nuevoTicket.asignadoId" [options]="asignacionOpciones" optionLabel="label" optionValue="value"
           placeholder="Seleccionar miembro..." styleClass="w-full" appendTo="body" [showClear]="true" />
       </div>
       <div class="field">
@@ -377,14 +379,14 @@
     </div>
   }
   <ng-template pTemplate="footer">
-  <div class="perm-footer">
-    <p-button label="Cerrar" icon="pi pi-times" severity="secondary" [outlined]="true" (click)="detailVisible = false" />
-    @if (selectedTicket && canEditFull(selectedTicket)) {
-      <p-button label="Editar" icon="pi pi-pencil" (click)="openEdit()" />
-    }
-    <p-button *ifHasPermission="'ticket:delete'" label="Eliminar" icon="pi pi-trash" severity="danger" [outlined]="true" (click)="deleteTicket()" />
-  </div>
-</ng-template>
+    <div class="perm-footer">
+      <p-button label="Cerrar" icon="pi pi-times" severity="secondary" [outlined]="true" (click)="detailVisible = false" />
+      @if (selectedTicket && canEditFull(selectedTicket)) {
+        <p-button label="Editar" icon="pi pi-pencil" (click)="openEdit()" />
+      }
+      <p-button *ifHasPermission="'ticket:delete'" label="Eliminar" icon="pi pi-trash" severity="danger" [outlined]="true" (click)="deleteTicket()" />
+    </div>
+  </ng-template>
 </p-dialog>
 
 <!-- ══ Dialog EDITAR ticket ═══════════════════════════════════════════════ -->
@@ -403,7 +405,7 @@
       <div class="dialog-row">
         <div class="field">
           <label class="field-label">Asignado a</label>
-          <p-select [(ngModel)]="editDetailData.asignadoId" [options]="miembrosOpciones" optionLabel="label" optionValue="value"
+          <p-select [(ngModel)]="editDetailData.asignadoId" [options]="asignacionOpciones" optionLabel="label" optionValue="value"
             placeholder="Seleccionar miembro..." styleClass="w-full" appendTo="body" [showClear]="true" />
         </div>
         <div class="field">
@@ -433,6 +435,72 @@
     <div class="perm-footer">
       <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [outlined]="true" (click)="editVisible = false" />
       <p-button label="Guardar" icon="pi pi-check" (click)="saveDetail()" />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- ══ Dialog GESTIONAR MIEMBROS ══════════════════════════════════════════ -->
+<p-dialog [(visible)]="membersDialogVisible" header="Gestionar miembros" [modal]="true" [draggable]="false"
+  [style]="{ width: '580px', maxWidth: '95vw' }" styleClass="ticket-create-dialog">
+  <div class="flex flex-column gap-4 pt-2">
+
+    <div class="field field-full">
+      <label class="field-label">Agregar miembro</label>
+      <div class="member-add-row">
+        <p-autocomplete
+          [(ngModel)]="selectedMemberToAdd"
+          [suggestions]="memberSuggestions"
+          (completeMethod)="searchMember($event)"
+          optionLabel="nombre"
+          placeholder="Buscar por nombre o email..."
+          [forceSelection]="true"
+          styleClass="w-full"
+          appendTo="body"
+        >
+          <ng-template let-user pTemplate="item">
+            <div class="autocomplete-item">
+              <div class="autocomplete-avatar">{{ user.nombre.charAt(0) }}</div>
+              <div class="autocomplete-info">
+                <span class="autocomplete-name">{{ user.nombre }}</span>
+                <span class="autocomplete-email">{{ user.email }}</span>
+              </div>
+            </div>
+          </ng-template>
+        </p-autocomplete>
+        <button type="button" class="create-ticket-btn" (click)="addMemberFromSelect()">
+          <i class="pi pi-user-plus"></i><span>Añadir</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="field field-full">
+      <label class="field-label">Miembros actuales ({{ miembrosGrupo.length }})</label>
+      <div class="members-manage-list">
+        @for (member of miembrosGrupo; track member.id) {
+          <div class="member-manage-item">
+            <div class="member-card-avatar">{{ member.nombre.charAt(0) }}</div>
+            <div class="member-card-info">
+              <span class="member-card-name">{{ member.nombre }}</span>
+              <span class="member-card-email">{{ member.email }}</span>
+            </div>
+            <button type="button" class="remove-member-btn" (click)="removeMember(member.id)">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+        }
+        @if (miembrosGrupo.length === 0) {
+          <div class="members-empty">
+            <i class="pi pi-users"></i>
+            <span>Sin integrantes</span>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="perm-footer">
+      <p-button label="Cerrar" icon="pi pi-times" severity="secondary" [outlined]="true" (click)="membersDialogVisible = false" />
     </div>
   </ng-template>
 </p-dialog>

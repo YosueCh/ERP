@@ -285,84 +285,118 @@
     </ng-template>
   </p-dialog>
 
+  
   <!-- Dialog permisos por grupo -->
-  <p-dialog
-    [(visible)]="permDialogVisible"
-    [header]="'Permisos de ' + (permUser?.nombre ?? '')"
-    [modal]="true"
-    [style]="{ width: '620px', maxWidth: '95vw' }"
-    [draggable]="false"
-  >
-    <div class="flex flex-column gap-4 pt-2">
-      <div class="field">
-        <label class="field-label">Selecciona un grupo</label>
-        @if (loadingGroups) {
-          <p-skeleton height="42px" borderRadius="8px" />
-        } @else if (userGroups.length === 0) {
-          <div class="no-groups">
-            <i class="pi pi-info-circle"></i>
-            <span>Este usuario no pertenece a ningún grupo</span>
-          </div>
-        } @else {
-          <p-select
-            [options]="userGroups"
-            [(ngModel)]="selectedGroupId"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Seleccionar grupo..."
-            [appendTo]="'body'"
-            (onChange)="onGroupSelect($event.value)"
-            class="w-full"
-          />
-        }
-      </div>
+<p-dialog
+  [(visible)]="permDialogVisible"
+  [header]="'Permisos de ' + (permUser?.nombre ?? '')"
+  [modal]="true"
+  [style]="{ width: '620px', maxWidth: '95vw' }"
+  [draggable]="false"
+>
+  <div class="flex flex-column gap-4 pt-2">
 
-      @if (selectedGroupId) {
-        @if (loadingPerms) {
-          <div class="flex flex-column gap-2">
-            @for (i of [1, 2, 3]; track i) {
-              <p-skeleton height="44px" borderRadius="8px" />
-            }
-          </div>
-        } @else {
-          <div class="perms-container">
-            @for (grupo of permissionGroups; track grupo) {
-              <div class="perm-group">
-                <div class="perm-group-title">{{ grupo }}</div>
-                <div class="perm-list">
-                  @for (perm of getMemberPermsByGroup(grupo); track perm.id) {
-                    <div class="perm-row">
-                      <span class="perm-label">{{ getPermisoLabel(perm) }}</span>
-                      <p-toggleswitch
-                        [(ngModel)]="perm.activo"
-                        (ngModelChange)="togglePermiso(perm.clave, $event)"
-                      />
-                    </div>
-                  }
-                </div>
+    <!-- ── Permisos globales (GRUPOS y USUARIOS) ──────────────────────── -->
+    @if (globalPermisos.length > 0) {
+      <div class="perms-global-section">
+        <div class="perm-global-label">
+          <i class="pi pi-globe"></i>
+          <span>Permisos globales del sistema</span>
+        </div>
+        <div class="perms-container">
+          @for (grupo of globalPermissionGroups; track grupo) {
+            <div class="perm-group">
+              <div class="perm-group-title">{{ grupo }}</div>
+              <div class="perm-list">
+                @for (perm of getGlobalPermsByGroup(grupo); track perm.id) {
+                  <div class="perm-row">
+                    <span class="perm-label">{{ getPermisoLabel(perm) }}</span>
+                    <p-toggleswitch
+                      [(ngModel)]="perm.activo"
+                      (ngModelChange)="toggleGlobalPermiso(perm.clave, $event)"
+                    />
+                  </div>
+                }
               </div>
-            }
-          </div>
-        }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ── Permisos por equipo (TICKETS) ─────────────────────────────── -->
+    <div class="field">
+      <div class="perm-global-label">
+        <i class="pi pi-users"></i>
+        <span>Permisos por equipo</span>
+      </div>
+      @if (loadingGroups) {
+        <p-skeleton height="42px" borderRadius="8px" />
+      } @else if (userGroups.length === 0) {
+        <div class="no-groups">
+          <i class="pi pi-info-circle"></i>
+          <span>Este usuario no pertenece a ningún grupo</span>
+        </div>
+      } @else {
+        <p-select
+          [options]="userGroups"
+          [(ngModel)]="selectedGroupId"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Seleccionar equipo..."
+          [appendTo]="'body'"
+          (onChange)="onGroupSelect($event.value)"
+          class="w-full"
+        />
       }
     </div>
 
-    <ng-template pTemplate="footer">
-      <div class="perm-footer">
-        <p-button
-          label="Cancelar"
-          icon="pi pi-times"
-          severity="secondary"
-          [outlined]="true"
-          (onClick)="permDialogVisible = false"
-        />
-        <p-button
-          label="Guardar permisos"
-          icon="pi pi-check"
-          [disabled]="!selectedGroupId"
-          (onClick)="savePermissions()"
-        />
-      </div>
-    </ng-template>
-  </p-dialog>
+    @if (selectedGroupId) {
+      @if (loadingPerms) {
+        <div class="flex flex-column gap-2">
+          @for (i of [1, 2, 3]; track i) {
+            <p-skeleton height="44px" borderRadius="8px" />
+          }
+        </div>
+      } @else {
+        <div class="perms-container">
+          @for (grupo of ticketPermissionGroups; track grupo) {
+            <div class="perm-group">
+              <div class="perm-group-title">{{ grupo }}</div>
+              <div class="perm-list">
+                @for (perm of getMemberPermsByGroup(grupo); track perm.id) {
+                  <div class="perm-row">
+                    <span class="perm-label">{{ getPermisoLabel(perm) }}</span>
+                    <p-toggleswitch
+                      [(ngModel)]="perm.activo"
+                      (ngModelChange)="togglePermiso(perm.clave, $event)"
+                    />
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="perm-footer">
+      <p-button
+        label="Cancelar"
+        icon="pi pi-times"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="permDialogVisible = false"
+      />
+      <p-button
+        label="Guardar permisos"
+        icon="pi pi-check"
+        (onClick)="savePermissions()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>
 </div>

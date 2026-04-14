@@ -21,6 +21,7 @@ import { ToastModule } from 'primeng/toast';
 import { SkeletonModule } from 'primeng/skeleton';
 import { MessageService } from 'primeng/api';
 import { SelectModule } from 'primeng/select';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 
 import { HasPermissionDirective } from '../../core/directives/has-permission';
 import { ApiService } from '../../core/services/api.service';
@@ -39,7 +40,7 @@ type FiltroRapido   = 'ninguno' | 'mis_tickets' | 'sin_asignar';
     ButtonModule, CardModule, TagModule, AvatarModule,
     DialogModule, InputTextModule, TextareaModule,
     ToastModule, SkeletonModule, SelectModule,
-    HasPermissionDirective,
+    AutoCompleteModule, HasPermissionDirective,
   ],
   providers: [MessageService],
   templateUrl: './group-dashboard.html',
@@ -50,25 +51,28 @@ export class GroupDashboard implements OnInit {
   groupId    = 0;
   tickets: any[]       = [];
   miembrosGrupo: any[] = [];
+  allUsers: any[]      = [];
   loading = true;
 
   vista: 'kanban' | 'lista' = 'kanban';
   filtroEstado: TicketEstado | 'todos' = 'todos';
   filtroRapido: FiltroRapido = 'ninguno';
 
-  dialogVisible = false;
-  detailVisible = false;
-  editVisible   = false;
+  dialogVisible        = false;
+  detailVisible        = false;
+  editVisible          = false;
+  membersDialogVisible = false;
 
-  selectedTicket: any = null;
-  comentarioNuevo = '';
+  selectedTicket: any      = null;
+  comentarioNuevo          = '';
+  selectedMemberToAdd: any = null;
+  memberSuggestions: any[] = [];
 
   filtroListaEstado: TicketEstado | 'todos' = 'todos';
   filtroListaPrioridad: TicketPrioridad | 'todas' = 'todas';
   filtroListaAsignado = '';
   ordenLista = 'id_asc';
 
-  // Paginación
   paginaActual     = 1;
   ticketsPorPagina = 10;
 
@@ -135,7 +139,14 @@ export class GroupDashboard implements OnInit {
     return this.miembrosGrupo.map(m => ({ label: m.nombre, value: m.id }));
   }
 
-  // ── Paginación ────────────────────────────────────────────────────────────
+  get asignacionOpciones(): { label: string; value: string }[] {
+    if (this.permissionsService.hasPermission('users:view')) {
+      return this.miembrosOpciones;
+    }
+    const yo = this.miembrosGrupo.find((m: any) => m.id === this.usuarioActual?.id);
+    return yo ? [{ label: yo.nombre + ' (tú)', value: yo.id }] : [];
+  }
+
   get ticketsListaPaginados(): any[] {
     const inicio = (this.paginaActual - 1) * this.ticketsPorPagina;
     return this.ticketsLista.slice(inicio, inicio + this.ticketsPorPagina);
@@ -156,6 +167,7 @@ export class GroupDashboard implements OnInit {
       this.group   = state.group;
       this.groupId = state.group.id;
       await this.loadData();
+      await this.loadAllUsers();
     } else {
       this.router.navigate(['/home']);
     }
@@ -180,7 +192,8 @@ export class GroupDashboard implements OnInit {
         historial:    [],
         estadoInline: t.estado,
       }));
-      this.paginaActual = 1; // reset paginación al recargar
+      this.paginaActual = 1;
+      this.permissionsService.refreshPermissionsForGroup(String(this.groupId));
     } catch {
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los datos del grupo' });
     } finally {
@@ -188,7 +201,55 @@ export class GroupDashboard implements OnInit {
     }
   }
 
-  // ── Filtros ───────────────────────────────────────────────────────────────
+  async loadAllUsers(): Promise<void> {
+    try {
+      const res = await this.apiService.getUsers().toPromise();
+      this.allUsers = (res?.data ?? []).filter((u: any) => u.activo);
+    } catch {
+      console.error('Error cargando usuarios');
+    }
+  }
+
+  openMembersDialog(): void {
+    this.selectedMemberToAdd = null;
+    this.membersDialogVisible = true;
+  }
+
+  searchMember(event: any): void {
+    const query = event.query.toLowerCase();
+    this.memberSuggestions = this.allUsers
+      .filter((u: any) =>
+        u.nombre.toLowerCase().includes(query) ||
+        u.email.toLowerCase().includes(query)
+      )
+      .filter((u: any) => !this.miembrosGrupo.find((m: any) => m.id === u.id));
+  }
+
+  async addMemberFromSelect(): Promise<void> {
+    if (!this.selectedMemberToAdd?.id) {
+      this.messageService.add({ severity: 'warn', summary: 'Sin selección', detail: 'Selecciona un usuario de la lista' });
+      return;
+    }
+    try {
+      await this.apiService.addMember(this.groupId, this.selectedMemberToAdd.id).toPromise();
+      this.messageService.add({ severity: 'success', summary: 'Agregado', detail: `${this.selectedMemberToAdd.nombre} fue agregado al grupo` });
+      this.selectedMemberToAdd = null;
+      await this.loadData();
+    } catch {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo agregar el miembro' });
+    }
+  }
+
+  async removeMember(memberId: string): Promise<void> {
+    try {
+      await this.apiService.removeMember(this.groupId, memberId).toPromise();
+      this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Miembro removido del grupo' });
+      await this.loadData();
+    } catch {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo remover el miembro' });
+    }
+  }
+
   getTicketsPorEstado(estado: TicketEstado): any[] {
     return this.aplicarFiltroRapido(this.tickets.filter(t => t.estado === estado));
   }
@@ -233,7 +294,6 @@ export class GroupDashboard implements OnInit {
 
   goBack(): void { this.router.navigate(['/home']); }
 
-  // ── Permisos ──────────────────────────────────────────────────────────────
   canMoveTicket(ticket: any): boolean {
     const esMio        = ticket.asignadoId === this.usuarioActual?.id;
     const tienePermiso = this.permissionsService.hasPermission('ticket:edit_state');
@@ -246,7 +306,6 @@ export class GroupDashboard implements OnInit {
     return esCreadoPorId || tienePermiso;
   }
 
-  // ── CRUD Tickets ──────────────────────────────────────────────────────────
   openCrearTicket(): void {
     this.nuevoTicket = { titulo: '', descripcion: '', estado: 'pendiente', asignadoId: null, prioridad: 'media', fechaLimite: '' };
     this.dialogVisible = true;
@@ -279,7 +338,6 @@ export class GroupDashboard implements OnInit {
     this.selectedTicket  = { ...ticket, comentarios: [], historial: [] };
     this.detailVisible   = true;
     this.comentarioNuevo = '';
-
     try {
       const res = await this.apiService.getTicketById(ticket.id).toPromise();
       if (res?.data) {
@@ -289,7 +347,7 @@ export class GroupDashboard implements OnInit {
           historial:   res.data.historial   ?? [],
         };
       }
-    } catch { /* usa datos base */ }
+    } catch { }
   }
 
   openEdit(): void {
@@ -334,19 +392,18 @@ export class GroupDashboard implements OnInit {
   }
 
   async deleteTicket(): Promise<void> {
-  if (!this.selectedTicket) return;
-  try {
-    await this.apiService.deleteTicket(this.selectedTicket.id).toPromise();
-    this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Ticket eliminado correctamente' });
-    this.detailVisible = false;
-    this.selectedTicket = null;
-    await this.loadData();
-  } catch {
-    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el ticket' });
+    if (!this.selectedTicket) return;
+    try {
+      await this.apiService.deleteTicket(this.selectedTicket.id).toPromise();
+      this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Ticket eliminado correctamente' });
+      this.detailVisible = false;
+      this.selectedTicket = null;
+      await this.loadData();
+    } catch {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el ticket' });
+    }
   }
-}
 
-  // ── Cambio de estado inline ───────────────────────────────────────────────
   async cambiarEstadoInline(ticket: any, nuevoEstado: TicketEstado): Promise<void> {
     if (!nuevoEstado || nuevoEstado === ticket.estado) return;
     const estadoAnterior = ticket.estado;
@@ -354,11 +411,7 @@ export class GroupDashboard implements OnInit {
     ticket.estadoInline  = nuevoEstado;
     try {
       await this.apiService.updateTicketStatus(ticket.id, nuevoEstado, this.groupId).toPromise();
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Estado actualizado',
-        detail: `Ticket pasó a ${this.getEstadoLabel(nuevoEstado)}`,
-      });
+      this.messageService.add({ severity: 'success', summary: 'Estado actualizado', detail: `Ticket pasó a ${this.getEstadoLabel(nuevoEstado)}` });
       await this.loadData();
     } catch {
       ticket.estado       = estadoAnterior;
@@ -367,25 +420,17 @@ export class GroupDashboard implements OnInit {
     }
   }
 
-  // ── Drag & Drop ───────────────────────────────────────────────────────────
   async onDrop(event: CdkDragDrop<any[]>, nuevoEstado: TicketEstado): Promise<void> {
     const ticket = event.previousContainer.data[event.previousIndex];
     if (!ticket) return;
-
     if (!this.canMoveTicket(ticket)) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Sin permiso',
-        detail: 'Solo puedes mover tickets asignados a ti o con permiso ticket:edit_state',
-      });
+      this.messageService.add({ severity: 'warn', summary: 'Sin permiso', detail: 'Solo puedes mover tickets asignados a ti o con permiso ticket:edit_state' });
       return;
     }
-
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
       return;
     }
-
     transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
     try {
       await this.apiService.updateTicketStatus(ticket.id, nuevoEstado, this.groupId).toPromise();
@@ -397,7 +442,6 @@ export class GroupDashboard implements OnInit {
     }
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
   getEstadoLabel(estado: TicketEstado): string {
     const map: Record<TicketEstado, string> = {
       pendiente: 'Pendiente', en_progreso: 'En Progreso', revision: 'Revisión', hecho: 'Hecho',

@@ -268,3 +268,96 @@ html, body {
   background: rgba(0, 0, 0, 0.7) !important;
   backdrop-filter: blur(4px) !important;
 }
+
+/* ── Confirm Dialog global ───────────────────────────────────────────────── */
+.p-confirmdialog {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.5) !important;
+}
+.p-confirmdialog .p-dialog-header {
+  background: #1e293b !important;
+  border-bottom: 1px solid rgba(148,163,184,0.1) !important;
+  padding: 1.25rem 1.5rem !important;
+}
+.p-confirmdialog .p-dialog-header .p-dialog-title {
+  font-size: 1rem !important; font-weight: 700 !important; color: #f1f5f9 !important;
+}
+.p-confirmdialog .p-dialog-content {
+  background: #1e293b !important;
+  padding: 1.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+}
+.p-confirmdialog .p-confirmdialog-icon {
+  font-size: 1.5rem !important; color: #f87171 !important;
+}
+.p-confirmdialog .p-confirmdialog-message {
+  font-size: 0.95rem !important; color: #cbd5e1 !important; line-height: 1.5 !important;
+}
+.p-confirmdialog .p-dialog-footer {
+  background: #1e293b !important;
+  border-top: 1px solid rgba(148,163,184,0.1) !important;
+  padding: 1rem 1.5rem !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+.p-confirmdialog .p-dialog-footer .p-button {
+  box-shadow: none !important;
+  padding: 0.6rem 1.25rem !important;
+  border-radius: 8px !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+  margin: 0 !important;
+}
+.p-confirmdialog .p-dialog-footer .p-button:first-child {
+  background: transparent !important;
+  border: 1px solid rgba(148,163,184,0.3) !important;
+  color: #94a3b8 !important;
+}
+.p-confirmdialog .p-dialog-footer .p-button:first-child:hover {
+  background: rgba(148,163,184,0.1) !important;
+  border-color: #94a3b8 !important;
+  color: #f1f5f9 !important;
+}
+.p-confirmdialog .p-dialog-footer .p-button:last-child {
+  background: #ef4444 !important;
+  border: 1px solid #ef4444 !important;
+  color: #fff !important;
+}
+.p-confirmdialog .p-dialog-footer .p-button:last-child:hover {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #fff !important;
+}
+
+/* ── Autocomplete overlay global ─────────────────────────────────────────── */
+.p-autocomplete-overlay {
+  background: #1e293b !important;
+  border: 1px solid rgba(99,102,241,0.2) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+  overflow: hidden !important;
+}
+.p-autocomplete-list {
+  padding: 0.4rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+.p-autocomplete-option {
+  background: transparent !important;
+  color: #f1f5f9 !important;
+  border-radius: 8px !important;
+  padding: 0.5rem 0.75rem !important;
+  transition: background 0.15s ease !important;
+  cursor: pointer !important;
+}
+.p-autocomplete-option:hover,
+.p-autocomplete-option.p-focus {
+  background: rgba(99,102,241,0.12) !important;
+}

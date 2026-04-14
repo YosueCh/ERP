@@ -47,10 +47,14 @@ export class PermissionsService {
   }
 
   refreshPermissionsForGroup(groupId: string): void {
-    this.currentGroupId.set(groupId);
-    const perms = this.permissionsByGroup()[groupId] ?? [];
-    this.userPermissions.set(perms);
-  }
+  this.currentGroupId.set(groupId);
+  const allPerms = this.permissionsByGroup();
+  console.log('permissionsByGroup keys:', Object.keys(allPerms));
+  console.log('groupId buscado:', groupId);
+  const perms = allPerms[groupId] ?? allPerms[Number(groupId)] ?? [];
+  console.log('perms encontrados:', perms);
+  this.userPermissions.set(perms);
+}
 
   setPermissions(perms: string[]): void {
     this.userPermissions.set(perms);

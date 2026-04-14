@@ -51,7 +51,7 @@
 .vista-btn.active { background: rgba(99,102,241,0.15); color: #818cf8; font-weight: 600; }
 .vista-btn:hover:not(.active) { background: rgba(148,163,184,0.08); color: #f1f5f9; }
 
-/* ── Crear ticket button ─────────────────────────────────────────────────── */
+/* ── Botones header ──────────────────────────────────────────────────────── */
 .create-ticket-btn {
   display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem;
   border: none; border-radius: 10px;
@@ -59,8 +59,16 @@
   color: #fff; font-size: 0.875rem; font-weight: 700; cursor: pointer;
   box-shadow: 0 4px 14px rgba(99,102,241,0.35); transition: all 0.2s ease;
 }
-
 .create-ticket-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.5); }
+
+.manage-members-btn {
+  display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem;
+  border: 1px solid rgba(99,102,241,0.4); border-radius: 10px;
+  background: transparent; color: #818cf8;
+  font-size: 0.875rem; font-weight: 700; cursor: pointer;
+  transition: all 0.2s ease;
+}
+.manage-members-btn:hover { background: rgba(99,102,241,0.1); border-color: #818cf8; }
 
 /* ── Members section ─────────────────────────────────────────────────────── */
 .members-section {
@@ -84,7 +92,6 @@
   background: rgba(30,41,59,0.6); border: 1px solid rgba(148,163,184,0.1);
   border-radius: 12px; padding: 0.75rem 1rem; min-width: 200px; transition: all 0.2s ease;
 }
-
 .member-card:hover { border-color: rgba(99,102,241,0.3); background: rgba(99,102,241,0.08); }
 
 .member-card-avatar {
@@ -98,6 +105,34 @@
 .member-card-name { font-size: 0.875rem; font-weight: 600; color: #f1f5f9; }
 .member-card-email { font-size: 0.75rem; color: #64748b; }
 .members-empty { display: flex; align-items: center; gap: 0.5rem; color: #475569; font-size: 0.875rem; }
+
+/* ── Gestionar miembros dialog ───────────────────────────────────────────── */
+.member-add-row {
+  display: flex; gap: 0.75rem; align-items: center;
+}
+
+.members-manage-list {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  max-height: 300px; overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.member-manage-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  background: rgba(15,23,42,0.5); border: 1px solid rgba(148,163,184,0.1);
+  border-radius: 10px; padding: 0.75rem 1rem;
+  transition: border-color 0.2s ease;
+}
+.member-manage-item:hover { border-color: rgba(148,163,184,0.2); }
+.member-manage-item .member-card-info { flex: 1; }
+
+.remove-member-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid rgba(239,68,68,0.3); background: transparent;
+  color: #f87171; cursor: pointer; transition: all 0.2s ease;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.remove-member-btn:hover { background: rgba(239,68,68,0.15); border-color: #f87171; }
 
 /* ── Summary grid ────────────────────────────────────────────────────────── */
 .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.875rem; }
@@ -127,7 +162,6 @@
   color: #64748b; border-radius: 20px; padding: 0.4rem 0.875rem;
   font-size: 0.825rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
 }
-
 .quick-filter-btn:hover { border-color: rgba(99,102,241,0.3); color: #c7d2fe; }
 .quick-filter-btn.active { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.4); color: #818cf8; }
 .quick-filter-btn.clear.active { background: rgba(148,163,184,0.1); border-color: rgba(148,163,184,0.3); color: #cbd5e1; }
@@ -241,10 +275,8 @@
   cursor: pointer; transition: all 0.2s ease;
   display: flex; align-items: center; justify-content: center;
 }
-
 .pag-btn:hover:not([disabled]) { border-color: rgba(99,102,241,0.4); color: #818cf8; background: rgba(99,102,241,0.08); }
 .pag-btn[disabled] { opacity: 0.3; cursor: not-allowed; }
-
 .pag-info { font-size: 0.875rem; color: #64748b; }
 .pag-total { font-size: 0.8rem; color: #475569; margin-left: 0.25rem; }
 
@@ -354,7 +386,6 @@
 :host ::ng-deep .perm-footer .p-button:first-child { border: 1px solid rgba(148,163,184,0.3) !important; color: #94a3b8 !important; transition: all 0.2s ease !important; padding: 0.6rem 1.25rem !important; border-radius: 8px !important; }
 :host ::ng-deep .perm-footer .p-button:first-child .p-button-label, :host ::ng-deep .perm-footer .p-button:first-child .p-button-icon { color: #94a3b8 !important; }
 :host ::ng-deep .perm-footer .p-button:first-child:hover { background: rgba(148,163,184,0.1) !important; border-color: #94a3b8 !important; }
-:host ::ng-deep .perm-footer .p-button:first-child:hover .p-button-label, :host ::ng-deep .perm-footer .p-button:first-child:hover .p-button-icon { color: #f1f5f9 !important; }
 :host ::ng-deep .perm-footer .p-button:last-child { border: 1px solid rgba(99,102,241,0.4) !important; color: #818cf8 !important; transition: all 0.2s ease !important; padding: 0.6rem 1.25rem !important; border-radius: 8px !important; }
 :host ::ng-deep .perm-footer .p-button:last-child .p-button-label, :host ::ng-deep .perm-footer .p-button:last-child .p-button-icon { color: #818cf8 !important; }
 :host ::ng-deep .perm-footer .p-button:last-child:hover { background: linear-gradient(135deg,#6366f1,#8b5cf6) !important; border-color: transparent !important; }
@@ -385,6 +416,7 @@
 
 @media (max-width: 768px) {
   .page-header { flex-direction: column; align-items: flex-start; }
+  .page-header-right { flex-wrap: wrap; }
   .kanban-board { grid-template-columns: 1fr; }
   .summary-grid { grid-template-columns: repeat(2, 1fr); }
   .lista-controls { grid-template-columns: 1fr; }
@@ -393,4 +425,43 @@
   .member-card { min-width: 100%; }
   .lista-header-row-ext { grid-template-columns: 1fr !important; }
   .lista-row-ext { grid-template-columns: 1fr !important; }
+}
+
+
+/* ── Autocomplete ────────────────────────────────────────────────────────── */
+.autocomplete-item {
+  display: flex; align-items: center; gap: 0.75rem; padding: 0.25rem 0;
+}
+.autocomplete-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.autocomplete-info { display: flex; flex-direction: column; gap: 0.1rem; }
+.autocomplete-name { font-size: 0.875rem; font-weight: 600; color: #f1f5f9; }
+.autocomplete-email { font-size: 0.75rem; color: #64748b; }
+
+:host ::ng-deep .p-autocomplete {
+  width: 100% !important;
+}
+:host ::ng-deep .p-autocomplete-input {
+  background: rgba(15,23,42,0.8) !important;
+  border: 1px solid rgba(99,102,241,0.2) !important;
+  border-radius: 10px !important;
+  color: #f1f5f9 !important;
+  padding: 0.75rem 1rem !important;
+  width: 100% !important;
+}
+:host ::ng-deep .p-autocomplete-input:focus {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important;
+}
+:host ::ng-deep .p-autocomplete-overlay {
+  background: #1e293b !important;
+  border: 1px solid rgba(148,163,184,0.15) !important;
+  border-radius: 10px !important;
+}
+:host ::ng-deep .p-autocomplete-option:hover {
+  background: rgba(99,102,241,0.1) !important;
 }
